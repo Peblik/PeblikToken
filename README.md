@@ -1,8 +1,10 @@
-#Peblik Token Smart Contracts
+# Peblik Token Smart Contracts
 
 Solidity smart contracts and administrative web pages for the Peblik Token, presale, and public sale.
 
-### Token and Sale Requirements
+## Token and Sale Requirements
+
+The smart contracts are built to satisfy the following set of requirements:
 
 * R-001 PeblikToken contract MUST follow ERC-20 standard
 * R-002 Define token name; symbol; totalSupply
@@ -38,3 +40,24 @@ Solidity smart contracts and administrative web pages for the Peblik Token, pres
 * R-032 During public sale forward funds to multisig funds wallet
 * R-033 After public sale refund addresses that have not submitted KYC
 * R-034 After public sale owner MUST finalize sale triggering token distribution to other allocations
+
+## Build Notes
+
+This project uses Truffle and Node.js. You'll want to install the following node modules to get things working:
+
+To install the OpenZeppelin base contracts:
+```
+npm install zeppelin-solidity
+```
+To use Infura.io networks:
+```
+npm install truffle-hdwallet-provider
+```
+To run the web interface locally, first install the lite server: 
+```
+npm install lite-server
+```
+Then run it: 
+```
+npm run dev
+```
