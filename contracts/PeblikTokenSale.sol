@@ -1,14 +1,18 @@
 pragma solidity ^0.4.18;
 
 import "../node_modules/zeppelin-solidity/contracts/ownership/Ownable.sol";
-//import "../node_modules/zeppelin-solidity/contracts/crowdsale/Crowdsale.sol";
 import "../node_modules/zeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
 import '../node_modules/zeppelin-solidity/contracts/math/SafeMath.sol';
 import "./IPriceStrategy.sol";
-import "./FlatPricing.sol";
+import "./SaleThresholdPricing.sol";
 import "./PeblikToken.sol";
 
-contract PeblikPresale is Ownable {
+// TODO: Extract commonalities between this and PeblikPresale.sol into a common superclass.
+
+/**
+ * Manages the public crowdsale of PeblikTokens.
+ */
+contract PeblikTokenSale is Ownable {
     using SafeMath for uint256;
 
     // From Crowdsale.sol --------------------
@@ -25,8 +29,22 @@ contract PeblikPresale is Ownable {
 
     // Customizations ------------------------
 
-    // The time that the optional Early Bird period starts
-    uint256 public earlyTime;
+    // additional wallets where token allocations go after the sale
+    address public employeePoolWallet;
+    address public advisorPoolWallet;
+    address public bountyProgramWallet;
+
+    // NOTE: we await a decision about whether these amounts need to be changeable 
+    uint256 public employeePoolAmount = 360000000e18;
+    uint256 public advisorPoolAmount = 120000000e18;
+    uint256 public bountyProgramAmount = 120000000e18;
+    
+    // NOTE: we await a business decision about whether reserve tokens should be pre-minted and sent to wallets, 
+    // or just managed in the token contract itself as limits on available supply
+    //address resourceReserveWallet;
+    //address publicReserveWallet;
+    //uint256 public resourceReserveAmount = 960000000e18;
+    //uint256 public publicReserveAmount = 350000000e18;
 
     // Address of the account from which external (non-ETH) transactions will be received.
     address public paymentSource;
@@ -49,16 +67,12 @@ contract PeblikPresale is Ownable {
 
     IPriceStrategy public pricing;
 
-    // list of addresses that can purchase before presale opens
-    mapping (address => bool) public earlylist;
     // list of addresses that can purchase during the presale
     mapping (address => bool) public whitelist;
-    // special rates offered to specific buyers
-    mapping (address => uint256) public buyerPrice;
+
     // total bought by specific buyers - to check against max
     mapping (address => uint256) public totalPurchase;
 
-    uint256 public earlylistCount;
     uint256 public whitelistCount;
     uint256 public buyerCount;
 
@@ -68,7 +82,6 @@ contract PeblikPresale is Ownable {
     }
 
     RateHistory[] public conversionHistory;
-    RateHistory[] public priceHistory;
 
     /**
     * @dev Log a token purchase.
@@ -90,16 +103,17 @@ contract PeblikPresale is Ownable {
     event ConversionRateChanged(uint256 newRate);
 
     event WalletChanged(address newWallet);
+    //event ResourceReserveWalletChanged(address newWallet);
+    //event PublicReserveWalletChanged(address newWallet);
+    event EmployeeWalletChanged(address newWallet);
+    event AdvisorWalletChanged(address newWallet);
+    event BountyWalletChanged(address newWallet);
 
     event PaymentSourceChanged(address newSource);
 
-    event EarlyBuyerAdded(address buyer, uint256 buyerCount);
-
     event BuyerAdded(address buyer, uint256 buyerCount);
 
-    event BuyerPriceChanged(address buyer, uint256 price);
-
-    event PriceChanged(uint256 newPrice);
+    event PricesChanged(uint256 level1, uint256 level2, uint256 level3, uint256 level4);
 
     event CapReached(uint256 cap, uint256 tokensSold);
 
@@ -109,7 +123,6 @@ contract PeblikPresale is Ownable {
      * @dev Constructor
      *
      * @param _token The address of the PeblikToken contract
-     * @param _earlyTime The time that the early bird period begins
      * @param _startTime The time that the main presale period begins
      * @param _endTime The time that the presale ends; after this no more purchases are possiible
      * @param _centsPerToken The initial price per token, in terms of US cents (e.g. $0.15 would be 15)
@@ -118,11 +131,12 @@ contract PeblikPresale is Ownable {
      * @param _wallet The address of the ethereum wallet for collecting funds
      * @param _min The minimum amount required per purchase, in terms of US cents
      * @param _min The maximum amount that a buyer can purchase during the entire presale, in terms of US cents
+     * @param _thresholds An array of tokens-sold amounts that trigger new price levels
+     * @param _prices An array of price-per-token values corresponding to the sales thresholds
      */
-    function PeblikPresale(address _token, uint256 _earlyTime, uint256 _startTime, uint256 _endTime, uint256 _centsPerToken, uint256 _centsPerEth, uint256 _cap, uint256 _min, uint256 _max, address _wallet) public {
+    function PeblikTokenSale(address _token, uint256 _startTime, uint256 _endTime, uint256 _centsPerToken, uint256 _centsPerEth, uint256 _cap, uint256 _min, uint256 _max, address _wallet, uint256[] _thresholds, uint256[] _prices) public {
         require(_token != 0x0);
-        require(_earlyTime >= now);
-        require(_startTime >= _earlyTime);
+        require(_startTime > now);
         require(_endTime >= _startTime);
         require(_centsPerToken > 0);
         require(_centsPerEth > 0);
@@ -133,7 +147,6 @@ contract PeblikPresale is Ownable {
         owner = msg.sender;
 
         token = PeblikToken(_token);
-        earlyTime = _earlyTime;
         startTime = _startTime;
         endTime = _endTime;
         centsPerEth = _centsPerEth;
@@ -142,7 +155,7 @@ contract PeblikPresale is Ownable {
 
         changeMinMax(_min, _max);
 
-        pricing = new FlatPricing(_centsPerToken);
+        pricing = new SaleThresholdPricing(_thresholds, _prices);
     }
 
     function changeMinMax(uint256 _min, uint256 _max) internal {
@@ -165,13 +178,8 @@ contract PeblikPresale is Ownable {
      */
     function buyTokens() public payable {
         require(validPurchase(msg.sender));
-        
-        uint256 weiAmount = msg.value;
 
-        // TODO: do we need to check wei limits at all, or just convert to USD?
-        // -- concerned about whether certain transactions will get stuck due to conversion rate discrepancies
- 
-        /*
+        uint256 weiAmount = msg.value;
         if (weiAmount < minWei)
         {
             PurchaseError("Below minimum purchase amount.");
@@ -180,7 +188,6 @@ contract PeblikPresale is Ownable {
             PurchaseError("Above maximum purchase amount.");
             revert();
         }
-        */
 
         uint256 ethAmount = weiAmount.div(1 ether); 
         uint256 centsAmount = ethAmount.mul(centsPerEth);
@@ -243,7 +250,7 @@ contract PeblikPresale is Ownable {
         }
 
         // Convert to a token amount with decimals 
-        uint256 tokens = (_centsAmount / price) * (10 ** token.decimals());
+        uint256 tokens = (_centsAmount.div(price)).mul(10 ** token.decimals());
 
         // mint tokens as we go
         token.mint(_buyer, tokens);
@@ -270,18 +277,11 @@ contract PeblikPresale is Ownable {
     // 
     // @return true if buyers can buy at the moment
     function validPurchase(address _buyer) internal view returns (bool) {
-        if (now >= earlyTime && now <= endTime && !capReached) {
-            if (now < startTime) {
-                // in early period
-                if (isEarlylisted(_buyer)) {
-                    return true;
-                }
-            } else {
-                // in main sale period
-                if (isListed(_buyer)) {
-                    return true;
-                } 
-            }
+        if (now >= startTime && now <= endTime && !capReached) {
+            // in main sale period
+            if (isWhitelisted(_buyer)) {
+                return true;
+            } 
         }
         return false;
     }
@@ -292,6 +292,11 @@ contract PeblikPresale is Ownable {
     function completeSale () public onlyOwner {
         require(capReached || now > endTime); 
         saleComplete = true;
+
+        // allocate and transfer all allocations to other wallets
+        token.mint(employeePoolWallet, employeePoolAmount);
+        token.mint(advisorPoolWallet, advisorPoolAmount);
+        token.mint(bountyProgramWallet, bountyProgramAmount);
     }
 
     /**
@@ -351,6 +356,70 @@ contract PeblikPresale is Ownable {
     }
 
     /**
+    * @dev Change the wallet used for the Resource Reserve.
+    * @param _newWallet The address of the new wallet to use.
+    */
+    /*
+    function changeResourceReserveWallet (address _newWallet) public onlyOwner {
+        require(_newWallet != 0); 
+        require(!saleComplete);
+
+        resourceReserveWallet = _newWallet;
+        ResourceReserveWalletChanged(_newWallet);
+    }
+    */
+    /**
+    * @dev Change the wallet used for the Public Reserve.
+    * @param _newWallet The address of the new wallet to use.
+    */
+    /*
+    function changePublicReserveWallet (address _newWallet) public onlyOwner {
+        require(_newWallet != 0); 
+        require(!saleComplete);
+
+        publicReserveWallet = _newWallet;
+        PublicReserveWalletChanged(_newWallet);
+    }
+    */
+
+    /**
+    * @dev Change the wallet used for the employee pool. (This should be directed to an employee vesting contract).
+    * @param _newWallet The address of the new wallet to use.
+    */
+    function changeEmployeePoolWallet (address _newWallet) public onlyOwner {
+        require(_newWallet != 0); 
+        require(!saleComplete);
+
+        employeePoolWallet = _newWallet;
+        EmployeeWalletChanged(_newWallet);
+    }
+
+        /**
+    * @dev Change the wallet used for the advisor pool. (This should be directed to a token vesting contract).
+    * @param _newWallet The address of the new wallet to use.
+    */
+    function changeAdvisorPoolWallet (address _newWallet) public onlyOwner {
+        require(_newWallet != 0); 
+        require(!saleComplete);
+
+        advisorPoolWallet = _newWallet;
+        AdvisorWalletChanged(_newWallet);
+    }
+
+    /**
+    * @dev Change the wallet used for the Bounty Program. 
+    * (This may go to a smart contract that manages the progam; or just to a multisig wwallet used to disburse funds).
+    * @param _newWallet The address of the new wallet to use.
+    */
+    function changeBountyProgramWallet (address _newWallet) public onlyOwner {
+        require(_newWallet != 0); 
+        require(!saleComplete);
+
+        bountyProgramWallet = _newWallet;
+        BountyWalletChanged(_newWallet);
+    }
+
+    /**
     * @dev Change the address from which external payments can be sent.
     * @param _newSource The address of the new wallet to use.
     */
@@ -363,28 +432,23 @@ contract PeblikPresale is Ownable {
     }
 
     /**
-    * @dev Change the price per token for the current phase of the sale.
-    * @param _newPrice The new price, as cents per token
-    */
-    function changePrice(uint256 _newPrice) public onlyOwner {
-        require(_newPrice > 0);
-        require(!saleComplete);
-
-        pricing.changePrice(_newPrice);
-        priceHistory.push(RateHistory(now, _newPrice));
-
-        PriceChanged(_newPrice);
+     * @dev Change the price per token for the current phase of the sale.
+     * @param _thresholds An array of tokens-sold amounts that trigger new price levels
+     * @param _prices An array of price-per-token values corresponding to the sales thresholds
+     */
+    function changePrices(uint256[] _thresholds, uint256[] _prices) public onlyOwner {
+        SaleThresholdPricing(pricing).changeLevels(_thresholds, _prices);
     }
 
     // MANAGE WHITELISTS ----------------------------------------------------
-    function addToEarlylist(address _buyer) public onlyOwner {
-        require(!saleComplete);
-        require(_buyer != 0x0);
-        earlylist[_buyer] = true; 
-        earlylistCount++;
-        BuyerAdded(_buyer, earlylistCount);
-    }
 
+    /**
+     * @dev All participants in the public sale must be in the whitelist before they purchase. 
+     * Depending on their country, some participants will be required to provide KYC information, 
+     * or even qualify as accredited investors, before they will be added to thew whitelist.
+     * Participants can be added to the whitelist during the sale, but not after it is closed.
+     * @param _buyer The buyer's address to be added to the whitelist.
+     */
     function addToWhitelist(address _buyer) public onlyOwner {
         require(!saleComplete);
         require(_buyer != 0x0);
@@ -393,43 +457,12 @@ contract PeblikPresale is Ownable {
         BuyerAdded(_buyer, whitelistCount);
     }
 
-    // @return true if buyer is earlylisted
-    function isEarlylisted(address _buyer) public view returns (bool) {
-        return earlylist[_buyer];
-    }
-
     // @return true if buyer is whitelisted
     function isWhitelisted(address _buyer) public view returns (bool) {
         return whitelist[_buyer];
     }
 
-        // @return true if buyer is listed at all
-    function isListed(address _buyer) public view returns (bool) {
-        return (whitelist[_buyer] || earlylist[_buyer]);
-    }
-
-    /**
-     * Some buyers can have a prefential rate
-     *
-     * @param _buyer The address of the buyer
-     ^ @param _price The special purchase price, in terms of US cents (dollars * 100) per token
-     */
-    function setBuyerPrice(address _buyer, uint256 _price) onlyOwner public {
-        require(_price > 0);
-        require(isWhitelisted(_buyer));
-        require(!saleComplete);
-
-        buyerPrice[_buyer] = _price;
-
-        BuyerPriceChanged(_buyer, _price);
-    }
-
     function getDollarPrice(uint256 _value, uint256 _centsRaised, uint256 _tokensSold, address _buyer) internal view returns (uint256 price) {
-        // some early buyers are offered a discount on the presale price
-        if (buyerPrice[_buyer] != 0) {
-            return buyerPrice[_buyer];
-        }
-
         return pricing.getCurrentPrice(_value, _centsRaised, _tokensSold, _buyer);
     }
 }
