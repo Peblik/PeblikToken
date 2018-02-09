@@ -8,7 +8,7 @@ contract PeblikToken is BurnableToken, PausableToken, MintableToken {
 
     string public name = "Peblik Token";
     string public symbol = "PEB";
-    uint public decimals = 18;
+    uint256 public decimals = 18;
 
     /* Initial supply to be owned by this contract, if any */
     uint256 public initialSupply = 0; // at the start, there are no tokens yet
