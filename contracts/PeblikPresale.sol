@@ -77,6 +77,8 @@ contract PeblikPresale is Ownable {
     */
     event TokensBought(address indexed purchaser, address indexed buyer, uint256 centsPaid, uint256 tokenAmount, uint256 totalCentsRaised, uint256 totalTokensSold);
 
+    event ExternalPurchase(address indexed buyer, address indexed source, uint256 centsPaid);
+
     event StartTimeChanged(uint256 newTime);
 
     event EndTimeChanged(uint256 newTime);
@@ -87,9 +89,13 @@ contract PeblikPresale is Ownable {
 
     event PaymentSourceChanged(address newSource);
 
+    event BuyerAdded(address buyer, uint256 buyerCount);
+
     event BuyerPriceChanged(address buyer, uint256 price);
 
     event PriceChanged(uint256 newPrice);
+
+    event CapReached(uint256 cap, uint256 tokensSold);
 
     event PurchaseError(string msg);
 
@@ -189,7 +195,12 @@ contract PeblikPresale is Ownable {
         require(msg.sender == paymentSource); // transaction must come from pre-approved address
         require(_buyer != 0x0);
 
-        return buyWithCents(_buyer, _centsAmount);
+        bool success = buyWithCents(_buyer, _centsAmount);
+
+        if (success) {
+            ExternalPurchase(_buyer, msg.sender, _centsAmount);
+        }
+        return success;
     }
 
     function buyWithCents(address _buyer, uint256 _centsAmount) internal returns (bool success) {

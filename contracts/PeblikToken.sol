@@ -104,4 +104,11 @@ contract PeblikToken is BurnableToken, PausableToken, MintableToken {
         Transfer(address(0), _to, _amount);
         return true;
     }
+
+    // In case someone accidentally sends other ERC20 tokens to this contract,
+    // add a way to get them back out.
+    function claimStrandedTokens(address _token, address _to) public onlyOwner returns (bool) {
+		ERC20Basic token = ERC20Basic(_token);
+		return token.transfer(_to, token.balanceOf(this));
+	}
 }
