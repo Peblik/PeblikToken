@@ -4,7 +4,10 @@ Solidity smart contracts and administrative web pages for the Peblik Token, pres
 
 ## Token and Sale Requirements
 
-The smart contracts are built to satisfy the following set of requirements:
+The smart contracts are being built to satisfy the requirements outlined in the Peblik Smart Contract Requirements document: 
+https://docs.google.com/spreadsheets/d/1M0LcgZJ7VVuSVRivU5XYfb8RdwNDWxvdOtP2MCVdF5k/edit#gid=908547091
+
+Here is a short list of the requirements at the time of this writing:
 
 * R-001 PeblikToken contract MUST follow ERC-20 standard
 * R-002 Define token name; symbol; totalSupply
@@ -14,13 +17,13 @@ The smart contracts are built to satisfy the following set of requirements:
 * R-006 Max supply can be increased in the future
 * R-007 Token sale has 3 phases: private placement; pre-sale; public sale
 * R-008 MUST be able to issue tokens for people who paid with fiat during private placement
-* R-009 Private placement buyers SHOULD be KYC-whitelisted priot to receiving tokens
+* R-009 Private placement buyers SHOULD be KYC-whitelisted prior to receiving tokens
 * R-010 Private placement will sell 120 mln tokens at $0.05 or $0.10 each
 * R-011 Pre-Sale will sell 50 mln tokens at $0.15 each
-* R-012 Pre-sale participants must be KYC-whitelisted prior to sale start
-* R-013 Pre-Sale minimum is 1 ETH; maximum is 200 ETH
-* R-014 Pre-sale closes after a contribution takes it over 120 mln sold; or after 2 weeks
-* R-015 MIGHT enable an Early Bird pre-sale phase to give a random subse at first chance at buying
+* R-012 Pre-sale participants must be whitelisted prior to purchase
+* R-013 Pre-Sale minimum is US$1,000 (~1 ETH); maximum is US$200,000 (~200 ETH)
+* R-014 Pre-sale closes after a purchase takes it over 120 mln tokens sold; or after 2 weeks
+* R-015 MIGHT enable an Early Bird pre-sale phase to give a random subset at first chance at buying
 * R-016 Public sale will sell 200 million tokens at prices from $0.25 to $0.50 each
 * R-017 Public sale uses 4 level discount scheme based on total tokens sold
 * R-018 Public sale runs until all 200 mln tokens are sold or for 4 weeks (unless time is extended).
@@ -28,18 +31,23 @@ The smart contracts are built to satisfy the following set of requirements:
 * R-020 Token price per ETH will be set at start of Presale and daily therafter
 * R-021 Only direct ETH contributions will be accepted during the Presale
 * R-022 During Public Sale contributions will be accepted in other cryptocurrencies as well
-* R-023 MUST be able tp pause Presale and Public Sale in case of emergency
+* R-023 MUST be able to pause Presale and Public Sale in case of emergency
 * R-024 Listenable events should happen for each purchase during Presale and Public Sale
 * R-025 Listenable events should happen when token supply or allocations change
 * R-026 Listenable events should happen when Presale or Public Sale state changes
 * R-027 MUST be able to extend closing dates for Presale or Public Sale
-* R-028 MUST be able to change the discount schedule during the Public Sale.
-* R-029 When public sale closes send 480 million tokens to team and advisors vesting contract
-* R-030 After public sale closes MUST be able to send tokens to biz dev partners and bounty participants.
-* R-031 During Presale forward funds from contract to multisig funds wallet
-* R-032 During public sale forward funds to multisig funds wallet
-* R-033 After public sale refund addresses that have not submitted KYC
+* R-028 SHOULD be able to change the discount schedule during the Public Sale.
+* R-029 When public sale closes MUST send 480 million tokens to team and advisors vesting contract
+* R-030 After public sale closes MUST send tokens to biz dev partners and bounty participants.
+* R-031 During Presale forward funds from contract to multisig funds collection wallet
+* R-032 During public sale forward funds to multisig funds collection wallet
+* R-033 Public sale participants MUST be whitelisted prior to purchasing 
 * R-034 After public sale owner MUST finalize sale triggering token distribution to other allocations
+* R-035 Multi-signature wallet must be available for holding fund collected during presale.
+* R-036 Multi-signature wallet must be available for holding fund collected during public sale.
+* R-037 Multi-signature wallet must be able to hold Peblik Tokens for future allocations
+* R-038 Multi-signature wallet allows 3 or more owners and 3 or more signers
+* R-039 Let specific pre-sale participants buy at a preferential price
 
 ## Build Notes
 
