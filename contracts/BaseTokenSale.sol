@@ -1,7 +1,6 @@
 pragma solidity ^0.4.18;
 
 import "../node_modules/zeppelin-solidity/contracts/ownership/Ownable.sol";
-//import "../node_modules/zeppelin-solidity/contracts/crowdsale/Crowdsale.sol";
 import "../node_modules/zeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
 import '../node_modules/zeppelin-solidity/contracts/math/SafeMath.sol';
 import "./IPriceStrategy.sol";
@@ -72,9 +71,11 @@ contract BaseTokenSale is Ownable {
         uint256 rate;
         uint256 timestamp;
     }
-
+    
+    /**
+     * @dev Keeps track of when coversion rate changes occurred, to help with reporting and customer suppport inquiries.
+     */
     RateHistory[] public conversionHistory;
-    RateHistory[] public priceHistory;
 
     /**
     * @dev Log a token purchase.
@@ -370,4 +371,15 @@ contract BaseTokenSale is Ownable {
     function getDollarPrice(uint256 _value, uint256 _centsRaised, uint256 _tokensSold, address _buyer) internal view returns (uint256 price) {
         return pricing.getCurrentPrice(_value, _centsRaised, _tokensSold, _buyer);
     }
+
+    /**
+     * @dev In case someone accidentally sends other ERC20 tokens to this contract,
+     * add a way to get them back out.
+     * @param _token The address of the type of token that was received.
+     * @param _to The address to which to send the stranded tokens.
+     */
+    function claimStrandedTokens(address _token, address _to) public onlyOwner returns (bool) {
+		ERC20Basic strandedToken = ERC20Basic(_token);
+		return strandedToken.transfer(_to, strandedToken.balanceOf(this));
+	}
 }

@@ -12,7 +12,6 @@ import "./PeblikToken.sol";
 /**
  * Manages the Peblik Token Presale. In addition to all the rules defined in the BaseTokenSale superclass:
  * - defines an additional "early bird" period so buyers in the early list can purchase ahead of the main sale phase
- * - can add preferential prices for specific buyers
  */
 contract PeblikPresale is BaseTokenSale {
     using SafeMath for uint256;
@@ -25,16 +24,14 @@ contract PeblikPresale is BaseTokenSale {
     // list of addresses that can purchase before presale opens
     mapping (address => bool) public earlylist;
 
-    // special rates offered to specific buyers
-    mapping (address => uint256) public buyerPrice;
-
     uint256 public earlylistCount;
 
+    /**
+     * @dev Keeps track of when price changes occurred, to help with reporting and customer suppport inquiries.
+     */
     RateHistory[] public priceHistory;
 
     event EarlyBuyerAdded(address buyer, uint256 buyerCount);
-
-    event BuyerPriceChanged(address buyer, uint256 price);
 
     event PriceChanged(uint256 newPrice);
 
@@ -130,34 +127,5 @@ contract PeblikPresale is BaseTokenSale {
         // @return true if buyer is listed at all
     function isListed(address _buyer) public view returns (bool) {
         return (whitelist[_buyer] || earlylist[_buyer]);
-    }
-
-    /**
-     * Some buyers can have a prefential rate
-     *
-     * @param _buyer The address of the buyer
-     ^ @param _price The special purchase price, in terms of US cents (dollars * 100) per token
-     */
-    function setBuyerPrice(address _buyer, uint256 _price) onlyOwner public {
-        require(_price > 0);
-        require(isWhitelisted(_buyer));
-        require(!saleComplete);
-
-        buyerPrice[_buyer] = _price;
-
-        BuyerPriceChanged(_buyer, _price);
-    }
-
-    /**
-     * @dev Overrides getDollarPrice to add check against preferential buyer prices.
-     *
-    */
-    function getDollarPrice(uint256 _value, uint256 _centsRaised, uint256 _tokensSold, address _buyer) internal view returns (uint256 price) {
-        // some early buyers are offered a discount on the presale price
-        if (buyerPrice[_buyer] != 0) {
-            return buyerPrice[_buyer];
-        }
-
-        return pricing.getCurrentPrice(_value, _centsRaised, _tokensSold, _buyer);
     }
 }

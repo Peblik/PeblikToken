@@ -1,10 +1,10 @@
 pragma solidity ^0.4.18;
 
 import "../node_modules/zeppelin-solidity/contracts/token/ERC20/BurnableToken.sol";
-import "../node_modules/zeppelin-solidity/contracts/token/ERC20/PausableToken.sol";
 import "../node_modules/zeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
+import "./TransferableToken.sol";
 
-contract PeblikToken is BurnableToken, PausableToken, MintableToken {
+contract PeblikToken is TransferableToken, BurnableToken, MintableToken {
 
     string public name = "Peblik Token";
     string public symbol = "PEB";
@@ -105,10 +105,14 @@ contract PeblikToken is BurnableToken, PausableToken, MintableToken {
         return true;
     }
 
-    // In case someone accidentally sends other ERC20 tokens to this contract,
-    // add a way to get them back out.
+    /**
+     * @dev In case someone accidentally sends other ERC20 tokens to this contract,
+     * add a way to get them back out.
+     * @param _token The address of the type of token that was received.
+     * @param _to The address to which to send the stranded tokens.
+     */
     function claimStrandedTokens(address _token, address _to) public onlyOwner returns (bool) {
-		ERC20Basic token = ERC20Basic(_token);
-		return token.transfer(_to, token.balanceOf(this));
+		ERC20Basic strandedToken = ERC20Basic(_token);
+		return strandedToken.transfer(_to, strandedToken.balanceOf(this));
 	}
 }

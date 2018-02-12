@@ -57,7 +57,7 @@ contract SaleThresholdPricing is IPriceStrategy, Ownable {
         PriceLevelsChanged(numLevels);
     }
 
-    function getPriceLevels() public constant returns (PriceLevel[] _levels) {
+    function getPriceLevels() public view returns (PriceLevel[] _levels) {
         return levels;
     }
 
