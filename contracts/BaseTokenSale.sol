@@ -71,7 +71,7 @@ contract BaseTokenSale is Ownable {
         uint256 rate;
         uint256 timestamp;
     }
-    
+
     /**
      * @dev Keeps track of when coversion rate changes occurred, to help with reporting and customer suppport inquiries.
      */
@@ -151,9 +151,9 @@ contract BaseTokenSale is Ownable {
         maxWei = _max.div(centsPerEth).mul(1 ether);
     }
 
-    /*****
-    * Fallback Function to buy the tokens
-    */
+    /**
+     * @dev Fallback Function to buy the tokens
+     */
     function () public payable {
         buyTokens();
     }
@@ -194,7 +194,7 @@ contract BaseTokenSale is Ownable {
     }
 
     /**
-    * Allows transfer of tokens to a recipient who has purchased offline,for dollars (or other currencies converted to dollars).
+    * @dev Allows transfer of tokens to a recipient who has purchased offline,for dollars (or other currencies converted to dollars).
     * @param _buyer The address of the recipient of the tokens
     * @param _centsAmount The purchase amount in cents (dollars * 100, with no decimal place)
     * @return bool Returns true if executed successfully.
@@ -241,7 +241,7 @@ contract BaseTokenSale is Ownable {
         }
 
         // Convert to a token amount with decimals 
-        uint256 tokens = (_centsAmount / price) * (10 ** token.decimals());
+        uint256 tokens = _centsAmount.div(price).mul(10 ** token.decimals());
 
         // mint tokens as we go
         token.mint(_buyer, tokens);

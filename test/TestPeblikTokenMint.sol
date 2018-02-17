@@ -83,7 +83,7 @@ contract TestPeblikTokenMint {
     token.drawFromPublicReserve(drawAmt);
 
     Assert.equal(token.publicReserve(), 0, "publicReserve should now be zero");
-    Assert.equal(token.availableSupply(), availableExpected, "availableSupply should now be 960m + 350m - 100");
+    Assert.equal(token.availableSupply(), availableExpected, "availableSupply should now be 960m + 350m");
   }
 
   function testMaxResourceReserve() public {
@@ -92,7 +92,7 @@ contract TestPeblikTokenMint {
 
     token.addResourceReserve(addAmt);
 
-    Assert.equal(token.resourceReserve(), 960000000e18 + 350000000e18 + 1090000000e18 - 100e18, "resourceReserve should now be 960 million tokens + 350 million + 1,090 million - 100");
+    Assert.equal(token.resourceReserve(), 960000000e18 + 350000000e18 + 1090000000e18, "resourceReserve should now be 960 million tokens + 350 million + 1,090 million");
     Assert.equal(token.availableSupply(), availableExpected, "availableSupply should now be zero");
   }
 
