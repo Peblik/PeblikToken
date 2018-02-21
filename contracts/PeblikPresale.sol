@@ -32,7 +32,7 @@ contract PeblikPresale is BaseTokenSale {
     RateHistory[] public priceHistory;
 
     event EarlyBuyerAdded(address buyer, uint256 buyerCount);
-
+    event EarlyBuyerRemoved(address buyer, uint256 buyerCount);
     event PriceChanged(uint256 newPrice);
 
     /**
@@ -116,7 +116,15 @@ contract PeblikPresale is BaseTokenSale {
         require(_buyer != 0x0);
         earlylist[_buyer] = true; 
         earlylistCount++;
-        BuyerAdded(_buyer, earlylistCount);
+        EarlyBuyerAdded(_buyer, earlylistCount);
+    }
+
+    function removeFromEarlylist(address _buyer) public onlyOwner {
+        require(!saleComplete);
+        require(_buyer != 0x0 && earlylist[_buyer]);
+        earlylist[_buyer] = false; 
+        earlylistCount--;
+        EarlyBuyerRemoved(_buyer, earlylistCount);
     }
 
     // @return true if buyer is earlylisted
