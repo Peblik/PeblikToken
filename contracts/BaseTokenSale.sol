@@ -1,6 +1,7 @@
 pragma solidity ^0.4.18;
 
 import "../node_modules/zeppelin-solidity/contracts/ownership/Ownable.sol";
+import "../node_modules/zeppelin-solidity/contracts/lifecycle/Pausable.sol";
 import "../node_modules/zeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
 import '../node_modules/zeppelin-solidity/contracts/math/SafeMath.sol';
 import "./IPriceStrategy.sol";
@@ -20,7 +21,7 @@ import "./PeblikToken.sol";
  * - the sale ends when either the tokensSold cap has been reached, or the endTime has passed
  * - a manual completeSale() function must be invoked after the sale ends to trigger any post-sale processing
  */
-contract BaseTokenSale is Ownable {
+contract BaseTokenSale is Pausable {
     using SafeMath for uint256;
 
     // From Crowdsale.sol --------------------
@@ -71,7 +72,7 @@ contract BaseTokenSale is Ownable {
         uint256 rate;
         uint256 timestamp;
     }
-    
+
     /**
      * @dev Keeps track of when coversion rate changes occurred, to help with reporting and customer suppport inquiries.
      */
@@ -87,24 +88,17 @@ contract BaseTokenSale is Ownable {
     * @param totalTokensSold The total number of tokens sold so far
     */
     event TokensBought(address indexed purchaser, address indexed buyer, uint256 centsPaid, uint256 tokenAmount, uint256 totalCentsRaised, uint256 totalTokensSold);
-
+    
     event ExternalPurchase(address indexed buyer, address indexed source, uint256 centsPaid);
-
     event StartTimeChanged(uint256 newTime);
-
     event EndTimeChanged(uint256 newTime);
-
     event ConversionRateChanged(uint256 newRate);
-
     event WalletChanged(address newWallet);
-
     event PaymentSourceChanged(address newSource);
-
     event BuyerAdded(address buyer, uint256 buyerCount);
-
+    event BuyerRemoved(address buyer, uint256 buyerCount);
     event CapReached(uint256 cap, uint256 tokensSold);
-
-    event PurchaseError(string msg);
+    event PurchaseError(string msg, address indexed sender);
 
     /**
      * @dev Constructor
@@ -151,9 +145,9 @@ contract BaseTokenSale is Ownable {
         maxWei = _max.div(centsPerEth).mul(1 ether);
     }
 
-    /*****
-    * Fallback Function to buy the tokens
-    */
+    /**
+     * @dev Fallback Function to buy the tokens
+     */
     function () public payable {
         buyTokens();
     }
@@ -161,7 +155,7 @@ contract BaseTokenSale is Ownable {
     /**
      * @dev Purchase tokens with Ether.
      */
-    function buyTokens() public payable {
+    function buyTokens() whenNotPaused public payable {
         require(validPurchase(msg.sender));
         
         uint256 weiAmount = msg.value;
@@ -194,12 +188,12 @@ contract BaseTokenSale is Ownable {
     }
 
     /**
-    * Allows transfer of tokens to a recipient who has purchased offline,for dollars (or other currencies converted to dollars).
+    * @dev Allows transfer of tokens to a recipient who has purchased offline,for dollars (or other currencies converted to dollars).
     * @param _buyer The address of the recipient of the tokens
     * @param _centsAmount The purchase amount in cents (dollars * 100, with no decimal place)
     * @return bool Returns true if executed successfully.
     */
-    function externalPurchase (address _buyer, uint256 _centsAmount) external returns (bool) {
+    function externalPurchase (address _buyer, uint256 _centsAmount) whenNotPaused external returns (bool) {
         //require(_buyer != 0x0);
         //require(validPurchase(_buyer));
         //require(msg.sender == paymentSource); // transaction must come from pre-approved address
@@ -227,11 +221,11 @@ contract BaseTokenSale is Ownable {
         
         if (_centsAmount < minCents) {
             // single purchase must meet the minimum
-            PurchaseError("Below minimum purchase amount.");
+            PurchaseError("Below minimum purchase amount.", _buyer);
             revert();
         } else if (totalAmount > maxCents) {
             // total of all purchases by a single buyer during the sale cannot exceed the max
-            PurchaseError("Above maximum purchase amount.");
+            PurchaseError("Above maximum purchase amount.", _buyer);
             revert();
         }
     
@@ -240,12 +234,12 @@ contract BaseTokenSale is Ownable {
 
         // Price should never be zero, but just in case.
         if (price == 0) {
-            PurchaseError("Price is zero.");
+            PurchaseError("Price is zero.", _buyer);
             return false;
         }
 
         // Convert to a token amount with decimals 
-        uint256 tokens = (_centsAmount / price) * (10 ** token.decimals());
+        uint256 tokens = _centsAmount.div(price).mul(10 ** token.decimals());
 
         // mint tokens as we go
         token.mint(_buyer, tokens);
@@ -366,6 +360,14 @@ contract BaseTokenSale is Ownable {
         whitelist[_buyer] = true;
         whitelistCount++;
         BuyerAdded(_buyer, whitelistCount);
+    }
+
+    function removeFromWhitelist(address _buyer) public onlyOwner {
+        require(!saleComplete);
+        require(_buyer != 0x0 && whitelist[_buyer]);
+        whitelist[_buyer] = false; 
+        whitelistCount--;
+        BuyerRemoved(_buyer, whitelistCount);
     }
 
     // @return true if buyer is whitelisted

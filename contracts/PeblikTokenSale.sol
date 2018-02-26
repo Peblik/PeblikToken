@@ -27,19 +27,12 @@ contract PeblikTokenSale is BaseTokenSale {
     uint256 public employeePoolAmount = 360000000e18;
     uint256 public advisorPoolAmount = 120000000e18;
     uint256 public bountyProgramAmount = 120000000e18;
-    
-    // NOTE: we await a business decision about whether reserve tokens should be pre-minted and sent to wallets, 
-    // or just managed in the token contract itself as limits on available supply
-    //address resourceReserveWallet;
-    //address publicReserveWallet;
-    //uint256 public resourceReserveAmount = 960000000e18;
-    //uint256 public publicReserveAmount = 350000000e18;
 
     //event ResourceReserveWalletChanged(address newWallet);
     //event PublicReserveWalletChanged(address newWallet);
-    event EmployeeWalletChanged(address newWallet);
-    event AdvisorWalletChanged(address newWallet);
-    event BountyWalletChanged(address newWallet);
+    event EmployeeWalletChanged(address newWallet); 
+    event AdvisorWalletChanged(address newWallet); 
+    event BountyWalletChanged(address newWallet); 
 
     //event PricesChanged(uint256 level1, uint256 level2, uint256 level3, uint256 level4);
 
@@ -96,33 +89,6 @@ contract PeblikTokenSale is BaseTokenSale {
     }
 
     /**
-    * @dev Change the wallet used for the Resource Reserve.
-    * @param _newWallet The address of the new wallet to use.
-    */
-    /*
-    function changeResourceReserveWallet (address _newWallet) public onlyOwner {
-        require(_newWallet != 0); 
-        require(!saleComplete);
-
-        resourceReserveWallet = _newWallet;
-        ResourceReserveWalletChanged(_newWallet);
-    }
-    */
-    /**
-    * @dev Change the wallet used for the Public Reserve.
-    * @param _newWallet The address of the new wallet to use.
-    */
-    /*
-    function changePublicReserveWallet (address _newWallet) public onlyOwner {
-        require(_newWallet != 0); 
-        require(!saleComplete);
-
-        publicReserveWallet = _newWallet;
-        PublicReserveWalletChanged(_newWallet);
-    }
-    */
-
-    /**
     * @dev Change the wallet used for the employee pool. (This should be directed to an employee vesting contract).
     * @param _newWallet The address of the new wallet to use.
     */
@@ -159,12 +125,4 @@ contract PeblikTokenSale is BaseTokenSale {
         BountyWalletChanged(_newWallet);
     }
 
-    /**
-     * @dev Change the price per token for the current phase of the sale.
-     * @param _thresholds An array of tokens-sold amounts that trigger new price levels
-     * @param _prices An array of price-per-token values corresponding to the sales thresholds
-     */
-    function changePrices(uint256[] _thresholds, uint256[] _prices) public onlyOwner {
-        SaleThresholdPricing(pricing).changeLevels(_thresholds, _prices);
-    }
 }
