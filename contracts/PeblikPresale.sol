@@ -49,30 +49,13 @@ contract PeblikPresale is BaseTokenSale {
      * @param _min The minimum amount required per purchase, in terms of US cents
      * @param _min The maximum amount that a buyer can purchase during the entire presale, in terms of US cents
      */
-    function PeblikPresale(address _token, uint256 _earlyTime, uint256 _startTime, uint256 _endTime, uint256 _centsPerToken, uint256 _centsPerEth, uint256 _cap, uint256 _min, uint256 _max, address _wallet) public {
-        require(_token != 0x0);
+    function PeblikPresale(address _token, uint256 _earlyTime, uint256 _startTime, uint256 _endTime, uint256 _centsPerToken, uint256 _centsPerEth, uint256 _cap, uint256 _min, uint256 _max, address _wallet) BaseTokenSale(_token, _startTime,  _endTime, _centsPerToken, _centsPerEth, _cap, _min, _max, _wallet) public {
         require(_earlyTime >= now);
-        require(_startTime >= _earlyTime);
-        require(_endTime >= _startTime);
-        require(_centsPerToken > 0);
-        require(_centsPerEth > 0);
-        require(_cap > 0);
-        require(_wallet != 0x0);
-        require(_max > _min);
-
-        owner = msg.sender;
-
-        token = PeblikToken(_token);
         earlyTime = _earlyTime;
-        startTime = _startTime;
-        endTime = _endTime;
-        centsPerEth = _centsPerEth;
-        tokenCap = _cap;
-        wallet = _wallet;
+    }
 
-        changeMinMax(_min, _max);
-
-        pricing = new FlatPricing(_centsPerToken);
+    function getTime() public returns (uint256) {
+        return earlyTime;
     }
 
     /** 
@@ -80,6 +63,39 @@ contract PeblikPresale is BaseTokenSale {
      * @return true if buyers can buy at the moment
      */
     function validPurchase(address _buyer) internal view returns (bool) {
+        if (now >= earlyTime) {
+            return true;
+            if (now <= endTime) {
+                return true;
+                if (!capReached) {
+                    return true;
+                    if (now < startTime) {
+                        return true;
+                        // in early period
+                        if (isEarlylisted(_buyer)) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    } else {
+                        // in main sale period
+                        if (isListed(_buyer)) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+
+        /*
         if (now >= earlyTime && now <= endTime && !capReached) {
             if (now < startTime) {
                 // in early period
@@ -93,6 +109,7 @@ contract PeblikPresale is BaseTokenSale {
                 } 
             }
         }
+        */
         return false;
     }
 

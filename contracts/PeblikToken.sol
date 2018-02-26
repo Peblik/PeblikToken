@@ -52,7 +52,8 @@ contract PeblikToken is TransferableToken, BurnableToken, MintableToken {
      *
      * @param _drawAmount Amount of tokens to pull from the reserve into available token supply.
      */
-    function drawFromPublicReserve(uint256 _drawAmount) public /*onlyOwner*/ {
+     /*onlyOwner*/
+    function drawFromPublicReserve(uint256 _drawAmount) public { 
         require(_drawAmount > 0);
         require(publicReserve >= _drawAmount);
 

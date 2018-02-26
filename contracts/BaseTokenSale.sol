@@ -200,23 +200,26 @@ contract BaseTokenSale is Ownable {
     * @return bool Returns true if executed successfully.
     */
     function externalPurchase (address _buyer, uint256 _centsAmount) external returns (bool) {
-        require(validPurchase(_buyer));
-        require(msg.sender == paymentSource); // transaction must come from pre-approved address
-        require(_buyer != 0x0);
+        //require(_buyer != 0x0);
+        //require(validPurchase(_buyer));
+        //require(msg.sender == paymentSource); // transaction must come from pre-approved address
 
         bool success = buyWithCents(_buyer, _centsAmount);
 
         if (success) {
             ExternalPurchase(_buyer, msg.sender, _centsAmount);
         }
+        
         return success;
     }
 
     function buyWithCents(address _buyer, uint256 _centsAmount) internal returns (bool success) {
-        
+         /*
         // check purchase history
         uint256 totalAmount = _centsAmount;
         uint256 newBuyer = 0;
+
+     
         if (totalPurchase[_buyer] != 0) {
             totalAmount = totalAmount.add(_centsAmount);
             newBuyer = 1;
@@ -231,8 +234,9 @@ contract BaseTokenSale is Ownable {
             PurchaseError("Above maximum purchase amount.");
             revert();
         }
-
+    
         uint256 price = getDollarPrice(_centsAmount, centsRaised, tokensSold, _buyer);
+    
 
         // Price should never be zero, but just in case.
         if (price == 0) {
@@ -262,6 +266,7 @@ contract BaseTokenSale is Ownable {
             capReached = true;
             CapReached(tokenCap, tokensSold);
         }
+    */
         return true;
     }
 
@@ -369,6 +374,10 @@ contract BaseTokenSale is Ownable {
     }
 
     function getDollarPrice(uint256 _value, uint256 _centsRaised, uint256 _tokensSold, address _buyer) internal view returns (uint256 price) {
+        return pricing.getCurrentPrice(_value, _centsRaised, _tokensSold, _buyer);
+    }
+
+    function getDollarPriceExternal(uint256 _value, uint256 _centsRaised, uint256 _tokensSold, address _buyer) public view returns (uint256 price) {
         return pricing.getCurrentPrice(_value, _centsRaised, _tokensSold, _buyer);
     }
 
