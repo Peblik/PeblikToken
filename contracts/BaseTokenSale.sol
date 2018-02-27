@@ -133,8 +133,6 @@ contract BaseTokenSale is Pausable {
         wallet = _wallet;
 
         changeMinMax(_min, _max);
-
-        pricing = new FlatPricing(_centsPerToken);
     }
 
     function changeMinMax(uint256 _min, uint256 _max) internal {
@@ -194,9 +192,9 @@ contract BaseTokenSale is Pausable {
     * @return bool Returns true if executed successfully.
     */
     function externalPurchase (address _buyer, uint256 _centsAmount) whenNotPaused external returns (bool) {
-        //require(_buyer != 0x0);
-        //require(validPurchase(_buyer));
-        //require(msg.sender == paymentSource); // transaction must come from pre-approved address
+        require(_buyer != 0x0);
+        require(validPurchase(_buyer));
+        require(msg.sender == paymentSource); // transaction must come from pre-approved address
 
         bool success = buyWithCents(_buyer, _centsAmount);
 
@@ -208,7 +206,7 @@ contract BaseTokenSale is Pausable {
     }
 
     function buyWithCents(address _buyer, uint256 _centsAmount) internal returns (bool success) {
-         /*
+
         // check purchase history
         uint256 totalAmount = _centsAmount;
         uint256 newBuyer = 0;
@@ -228,7 +226,7 @@ contract BaseTokenSale is Pausable {
             PurchaseError("Above maximum purchase amount.", _buyer);
             revert();
         }
-    
+        
         uint256 price = getDollarPrice(_centsAmount, centsRaised, tokensSold, _buyer);
     
 
@@ -240,7 +238,7 @@ contract BaseTokenSale is Pausable {
 
         // Convert to a token amount with decimals 
         uint256 tokens = _centsAmount.div(price).mul(10 ** token.decimals());
-
+/*
         // mint tokens as we go
         token.mint(_buyer, tokens);
 
@@ -263,6 +261,17 @@ contract BaseTokenSale is Pausable {
     */
         return true;
     }
+
+    function getDollarPriceExternal(uint256 _value, uint256 _centsRaised, uint256 _tokensSold, address _buyer) public view returns (uint256 price) {
+        return pricing.getCurrentPrice(_value, _centsRaised, _tokensSold, _buyer);
+    }
+
+    function getToken() public view returns (uint256 value) {
+        //uint256 tokens = _centsAmount.div(price).mul(10 ** token.decimals());
+        //PeblikToken _token = PeblikToken(token);
+        return token.decimals();
+    }
+
 
     // 
     // @return true if buyers can buy at the moment
@@ -376,10 +385,6 @@ contract BaseTokenSale is Pausable {
     }
 
     function getDollarPrice(uint256 _value, uint256 _centsRaised, uint256 _tokensSold, address _buyer) internal view returns (uint256 price) {
-        return pricing.getCurrentPrice(_value, _centsRaised, _tokensSold, _buyer);
-    }
-
-    function getDollarPriceExternal(uint256 _value, uint256 _centsRaised, uint256 _tokensSold, address _buyer) public view returns (uint256 price) {
         return pricing.getCurrentPrice(_value, _centsRaised, _tokensSold, _buyer);
     }
 

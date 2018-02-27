@@ -107,7 +107,7 @@ contract('PeblikPresale', function(accounts) {
             var isPurchased = false;
             const centsAmount = new web3.BigNumber(10001);
             try {
-                var tx = await instance.externalPurchase.call(accounts[1], centsAmount);
+                var tx = await instance.externalPurchase.call(accounts[1], centsAmount, {from:accounts[5]});
                 //console.log(tx);
                 assert.equal(tx, true, 'External Purchase Failed');
                 done();
@@ -139,6 +139,22 @@ contract('PeblikPresale', function(accounts) {
             }            
        });
     });
+
+
+    it('Get Token', function(done){
+        PeblikPresale.deployed().then(async function(instance) {
+            try {
+                var token = await instance.getToken.call();
+                console.log(token);
+                assert.equal(true, true, 'Get Token Failed');
+                done();
+            } catch (error) {
+                console.log(error);
+                done(error);                
+            }
+        });
+    });
+
 
     /*
     it('should unpause correctly', function(done){

@@ -51,27 +51,7 @@ contract PeblikTokenSale is BaseTokenSale {
      * @param _thresholds An array of tokens-sold amounts that trigger new price levels
      * @param _prices An array of price-per-token values corresponding to the sales thresholds
      */
-    function PeblikTokenSale(address _token, uint256 _startTime, uint256 _endTime, uint256 _centsPerToken, uint256 _centsPerEth, uint256 _cap, uint256 _min, uint256 _max, address _wallet, uint256[] _thresholds, uint256[] _prices) public {
-        require(_token != 0x0);
-        require(_startTime > now);
-        require(_endTime >= _startTime);
-        require(_centsPerToken > 0);
-        require(_centsPerEth > 0);
-        require(_cap > 0);
-        require(_wallet != 0x0);
-        require(_max > _min);
-
-        owner = msg.sender;
-
-        token = PeblikToken(_token);
-        startTime = _startTime;
-        endTime = _endTime;
-        centsPerEth = _centsPerEth;
-        tokenCap = _cap;
-        wallet = _wallet;
-
-        changeMinMax(_min, _max);
-
+    function PeblikTokenSale(address _token, uint256 _startTime, uint256 _endTime, uint256 _centsPerToken, uint256 _centsPerEth, uint256 _cap, uint256 _min, uint256 _max, address _wallet, uint256[] _thresholds, uint256[] _prices) BaseTokenSale(_token, _startTime,  _endTime, _centsPerToken, _centsPerEth, _cap, _min, _max, _wallet) public {
         pricing = new SaleThresholdPricing(_thresholds, _prices);
     }
 

@@ -52,6 +52,7 @@ contract PeblikPresale is BaseTokenSale {
     function PeblikPresale(address _token, uint256 _earlyTime, uint256 _startTime, uint256 _endTime, uint256 _centsPerToken, uint256 _centsPerEth, uint256 _cap, uint256 _min, uint256 _max, address _wallet) BaseTokenSale(_token, _startTime,  _endTime, _centsPerToken, _centsPerEth, _cap, _min, _max, _wallet) public {
         require(_earlyTime >= now);
         earlyTime = _earlyTime;
+        pricing = new FlatPricing(_centsPerToken);
     }
 
     function getTime() public returns (uint256) {
@@ -63,14 +64,15 @@ contract PeblikPresale is BaseTokenSale {
      * @return true if buyers can buy at the moment
      */
     function validPurchase(address _buyer) internal view returns (bool) {
+        /*
         if (now >= earlyTime) {
-            return true;
+            //return true;
             if (now <= endTime) {
-                return true;
+                //return true;
                 if (!capReached) {
-                    return true;
+                    //return true;
                     if (now < startTime) {
-                        return true;
+                        //return true;
                         // in early period
                         if (isEarlylisted(_buyer)) {
                             return true;
@@ -94,8 +96,8 @@ contract PeblikPresale is BaseTokenSale {
         } else {
             return false;
         }
-
-        /*
+        */
+        
         if (now >= earlyTime && now <= endTime && !capReached) {
             if (now < startTime) {
                 // in early period
@@ -109,7 +111,7 @@ contract PeblikPresale is BaseTokenSale {
                 } 
             }
         }
-        */
+        
         return false;
     }
 
