@@ -38,11 +38,11 @@ contract('PeblikPresale', function(accounts) {
 
     it('is White Listed', function(done){
         PeblikPresale.deployed().then(async function(instance) {
-            var isListed = await instance.isWhitelisted(accounts[1]);
+            var isListed = await instance.isWhitelisted(accounts[0]);
             
             if (!isListed) {
-                await instance.addToWhitelist(accounts[1]);
-                isListed = await instance.isWhitelisted(accounts[1]);
+                await instance.addToWhitelist(accounts[0]);
+                isListed = await instance.isWhitelisted(accounts[0]);
             }
 
             try {
@@ -92,6 +92,24 @@ contract('PeblikPresale', function(accounts) {
                 var testit = timex.toNumber() <= currentDate;
                 //console.log(testit);
                 assert.equal(testit, true, 'Get Time Failed');
+                done();
+            } catch (error) {
+                console.log(error);
+                done(error);                
+            }
+        });
+    });
+
+    it('Buy Tokens', function(done){
+        PeblikPresale.deployed().then(async function(instance) {
+            //var isListed = await instance.isListed(accounts[1]);
+            var isPurchased = false;
+            //console.log(accounts[0]);
+            try {
+                var tx = await instance.buyTokens.call({value: 1e+18, from:accounts[0]});
+                //console.log(tx);
+                assert.isOk(tx, 'Buy Tokens Failed');
+                //assert.equal(tx, true, 'Buy Tokens Failed');
                 done();
             } catch (error) {
                 console.log(error);

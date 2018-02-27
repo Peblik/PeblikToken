@@ -238,10 +238,10 @@ contract BaseTokenSale is Pausable {
 
         // Convert to a token amount with decimals 
         uint256 tokens = _centsAmount.div(price).mul(10 ** token.decimals());
-/*
+
         // mint tokens as we go
         token.mint(_buyer, tokens);
-
+/*
         // update this buyer's purchase total
         totalPurchase[_buyer] = totalAmount;
         // keep count of unique buyer addresses

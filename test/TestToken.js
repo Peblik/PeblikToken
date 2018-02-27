@@ -4,57 +4,70 @@ contract('PeblikToken', function(accounts) {
 
     it('should start non-transferable', function(done){
         PeblikToken.deployed().then(async function(instance) { 
-            const isTransferable = await instance.transferable();
-            assert.equal(isTransferable, false, 'Token should not be trasnferable at the start');
-            done();
+            try {
+                const isTransferable = await instance.transferable.call();
+                //console.log(isTransferable);
+                assert.equal(isTransferable, false, 'Token should not be trasnferable at the start');
+                done();
+            } catch (error) {
+                done(error);
+            }
        });
     });
 
     it('should pause correctly', function(done){
         PeblikToken.deployed().then(async function(instance) {
-
-            await instance.pause();
-            const isPaused = await instance.paused();
-
             try {
+                await instance.pause();
+                const isPaused = await instance.paused();
+                //console.log(isPaused);
                 assert.equal(isPaused, true, 'Token was not paused correctly');
+                done();
             } catch (error) {
-                console.log(error);                
+                //console.log(error);
+                done(error);                
             }
-            done();
+            
        });
     });
 
     it('should unpause correctly', function(done){
         PeblikToken.deployed().then(async function(instance) {
-
-            await instance.unpause();
-            const isPaused = await instance.paused();
-
             try {
-                assert.equal(isPaused, false, 'Token was not unpaused correctly');                
+                await instance.unpause();
+                const isPaused = await instance.paused();
+                //console.log(isPaused);
+                assert.equal(isPaused, false, 'Token was not unpaused correctly');   
+                done();             
             } catch (error) {
-                console.log(error);                
+                //console.log(error);  
+                done(error);              
             }
-            done();
+            
        });
     });
 
     it('should mint tokens and send to recipient', function(done){
         PeblikToken.deployed().then(async function(instance) {
-            const tokenAmount = 20 * 1000000000000000000;
-            const recipient = accounts[1]; //address(0xf17f52151EbEF6C7334FAD080c5704D77216b732);
-            const totalExpected = (await instance.totalSupply.call()).toNumber() + tokenAmount;
-            const balanceExpected = (await instance.balanceOf(recipient)).toNumber() + tokenAmount;
-
-            await instance.mint(recipient, tokenAmount); //50e18, or 50 full tokens
-            
-            const totalSupply = await instance.totalSupply.call();
-            const balance = await instance.balanceOf(recipient);
-
-            assert.equal(balance.toNumber(), balanceExpected, 'Balance did not increase correctly');
-            assert.equal(totalSupply.toNumber(), totalExpected, 'Total supply did not increase correctly');          
-            done();
+            try {
+                const tokenAmount = 20 * 1000000000000000000;
+                const recipient = accounts[1]; //address(0xf17f52151EbEF6C7334FAD080c5704D77216b732);
+                const totalExpected = (await instance.totalSupply()).toNumber() + tokenAmount;
+                const balanceExpected = (await instance.balanceOf(recipient)).toNumber() + tokenAmount;
+                //console.log(totalExpected);
+                //console.log(balanceExpected);
+                await instance.mint(recipient, tokenAmount); //50e18, or 50 full tokens
+                
+                const totalSupply = await instance.totalSupply();
+                const balance = await instance.balanceOf(recipient);
+                //console.log(totalSupply);
+                //console.log(balance);
+                assert.equal(balance.toNumber(), balanceExpected, 'Balance did not increase correctly');
+                assert.equal(totalSupply.toNumber(), totalExpected, 'Total supply did not increase correctly');          
+                done();
+            } catch (error) {
+                done(error);
+            }
        });
     });
 
@@ -68,11 +81,15 @@ contract('PeblikToken', function(accounts) {
 
             try {
                 const balanceExpected = (await instance.balanceOf(recipient)).toNumber();
-
-                await instance.transfer(recipient, tokenAmount, {from: sender}); //50e18, or 50 full tokens
+                //console.log(balanceExpected);
+                try {
+                    await instance.transfer.call(recipient, tokenAmount, {from: sender}); //50e18, or 50 full tokens                   
+                } catch (error) {
+                    //console.log(error);
+                }
                 
                 const balance = await instance.balanceOf(recipient);
-    
+                //console.log(balance);    
                 assert.equal(balance.toNumber(), balanceExpected, 'Recipient balance should not have changed');        
                 done();
     
@@ -85,11 +102,15 @@ contract('PeblikToken', function(accounts) {
     
     it('should make token transferable', function(done){
         PeblikToken.deployed().then(async function(instance) { 
+            try {
+                await instance.setTransferable();
+                const isTransferable = await instance.transferable.call();
+                assert.equal(isTransferable, true, 'Token should now be transferable');
+                done();
+            } catch (error) {
+                done(error);
+            }
 
-            await instance.setTransferable();
-            const isTransferable = await instance.transferable();
-            assert.equal(isTransferable, true, 'Token should now be transferable');
-            done();
        });
     });
 
@@ -98,28 +119,22 @@ contract('PeblikToken', function(accounts) {
             const tokenAmount = 20 * 1000000000000000000;
             const sender = accounts[1]; 
             const recipient = accounts[2]; 
-
-            const senderBalanceExpected = (await instance.balanceOf(sender)).toNumber() - tokenAmount;
-            const balanceExpected = (await instance.balanceOf(recipient)).toNumber() + tokenAmount;
-
-            await instance.transfer(recipient, tokenAmount, {from: sender}); 
-            
-            const senderBalance = await instance.balanceOf(sender);
-            const balance = await instance.balanceOf(recipient);
-            
-            try {
-                assert.equal(senderBalance.toNumber(), senderBalanceExpected, 'Sender balance should have decreased by ' + tokenAmount);;                
-            } catch (error) {
-                console.log(error);
-            }
-            try {
-                assert.equal(balance.toNumber(), balanceExpected, 'Recipient balance should have increased by ' + tokenAmount);              
-            } catch (error) {
-                console.log(error);                
-            }
            
-
-            done();
+            try {
+                const senderBalanceExpected = (await instance.balanceOf.call(sender)).toNumber() - tokenAmount;
+                const balanceExpected = (await instance.balanceOf.call(recipient)).toNumber() + tokenAmount;
+    
+                await instance.transfer(recipient, tokenAmount, {from: sender}); 
+                
+                const senderBalance = await instance.balanceOf.call(sender);
+                const balance = await instance.balanceOf.call(recipient);
+                assert.equal(senderBalance.toNumber(), senderBalanceExpected, 'Sender balance should have decreased by ' + tokenAmount);;                
+                assert.equal(balance.toNumber(), balanceExpected, 'Recipient balance should have increased by ' + tokenAmount);  
+                done();            
+            } catch (error) {
+                //console.log(error);
+                done(error);
+            }
        });
     });
 
