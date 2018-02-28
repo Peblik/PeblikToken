@@ -66,7 +66,6 @@ contract BaseTokenSale is Pausable {
     mapping (address => uint256) public totalPurchase;
 
     uint256 public whitelistCount;
-    uint256 public buyerCount;
 
     struct RateHistory {
         uint256 rate;
@@ -94,7 +93,7 @@ contract BaseTokenSale is Pausable {
     event EndTimeChanged(uint256 newTime);
     event ConversionRateChanged(uint256 newRate);
     event WalletChanged(address newWallet);
-    event PaymentSourceChanged(address newSource);
+    event PaymentSourceChanged(address indexed oldSource, address indexed newSource);
     event BuyerAdded(address buyer, uint256 buyerCount);
     event BuyerRemoved(address buyer, uint256 buyerCount);
     event CapReached(uint256 cap, uint256 tokensSold);
@@ -228,7 +227,6 @@ contract BaseTokenSale is Pausable {
         }
         
         uint256 price = getDollarPrice(_centsAmount, centsRaised, tokensSold, _buyer);
-    
 
         // Price should never be zero, but just in case.
         if (price == 0) {
@@ -244,8 +242,6 @@ contract BaseTokenSale is Pausable {
 
         // update this buyer's purchase total
         totalPurchase[_buyer] = totalAmount;
-        // keep count of unique buyer addresses
-        buyerCount = buyerCount.add(newBuyer);
 
         // update presale stats
         centsRaised = centsRaised.add(_centsAmount);
@@ -258,7 +254,6 @@ contract BaseTokenSale is Pausable {
             capReached = true;
             CapReached(tokenCap, tokensSold);
         }
-/*    */
         return true;
     }
 
@@ -343,11 +338,11 @@ contract BaseTokenSale is Pausable {
     * @param _newSource The address of the new wallet to use.
     */
     function changePaymentSource (address _newSource) public onlyOwner {
-        require(_newSource != 0); 
+        require(_newSource != 0x0); 
         require(!saleComplete);
-
+        address oldSource = paymentSource;
         paymentSource = _newSource;
-        PaymentSourceChanged(_newSource);
+        PaymentSourceChanged(oldSource, _newSource);
     }
 
     // MANAGE WHITELISTS ----------------------------------------------------
@@ -395,19 +390,25 @@ contract BaseTokenSale is Pausable {
         return pricing.getCurrentPrice(_value, _centsRaised, _tokensSold, _buyer);
     }
 
-    function getToken() public payable returns (uint256 value) {
+    function calcTokens(uint256 weiAmount) public view returns (uint256 value) {
         uint256 price = getDollarPrice(0,0,0, msg.sender);
-        uint256 weiAmount = msg.value;
 
-        uint256 ethAmount = weiAmount.div(1 ether); 
-        uint256 _centsAmount = ethAmount.mul(centsPerEth);
-        uint256 tokens = _centsAmount.div(price).mul(10 ** token.decimals());
-        //PeblikToken _token = PeblikToken(token);
+        uint256 centsAmount = weiAmount.mul(centsPerEth).div(1 ether);
+        uint256 tokens = centsAmount.div(price).mul(10 ** token.decimals());
+
         return tokens;
     }
 
     function getTokenOwner() public returns (address value) {
         return token.owner();
+    }
+
+    function getTokenController() public returns (address value) {
+        return token.controller();
+    }
+
+    function getPaymentSource() public returns (address value) {
+        return paymentSource;
     }
 
     function getTokenOnlyOwner() public returns (bool value) {

@@ -1,14 +1,16 @@
 pragma solidity ^0.4.18;
 
-import "../node_modules/zeppelin-solidity/contracts/token/ERC20/BurnableToken.sol";
 import "../node_modules/zeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
 import "./TransferableToken.sol";
 
-contract PeblikToken is TransferableToken, BurnableToken, MintableToken {
+contract PeblikToken is TransferableToken, MintableToken {
 
     string public name = "Peblik Token";
     string public symbol = "PEB";
     uint256 public decimals = 18;
+
+    /* Address of the current contract that's allowed to call mint() and other functions */
+    address public controller;
 
     /* Initial supply to be owned by this contract, if any */
     uint256 public initialSupply = 0; // at the start, there are no tokens yet
@@ -30,6 +32,8 @@ contract PeblikToken is TransferableToken, BurnableToken, MintableToken {
     event ResourceReserveAdded(uint256 amount);
     event PublicReserveDrawn(uint256 amount);
     event ResourceReserveDrawn(uint256 amount);
+
+    event ControllerChanged(address indexed oldAddress, address indexed newAddress);
 
     function PeblikToken() public {
         totalSupply_ = 0;
@@ -94,7 +98,7 @@ contract PeblikToken is TransferableToken, BurnableToken, MintableToken {
     * @param _amount The amount of tokens to mint.
     * @return A boolean that indicates if the operation was successful.
     */
-    function mint(address _to, uint256 _amount) canMint whenNotPaused public returns (bool) { // onlyOwner canMint whenNotPaused
+    function mint(address _to, uint256 _amount) onlyOwnerOrController canMint whenNotPaused public returns (bool) { // onlyOwner canMint whenNotPaused
         if (totalSupply_.add(_amount) > availableSupply) {
             return false;
         }
@@ -116,4 +120,39 @@ contract PeblikToken is TransferableToken, BurnableToken, MintableToken {
 		ERC20Basic strandedToken = ERC20Basic(_token);
 		return strandedToken.transfer(_to, strandedToken.balanceOf(this));
 	}
+
+    /**
+     * @dev Throws if called by any account other than the controller.
+     */
+    modifier onlyOwnerOrController() {
+        require(msg.sender == controller || msg.sender == owner);
+        _;
+    }
+
+        /**
+     * @dev Throws if called by any account other than the controller.
+     */
+    modifier onlyController() {
+        require(msg.sender == controller);
+        _;
+    }
+
+    /**
+     *
+     */
+    function setController(address _newController) public onlyOwner {
+        require(_newController != 0x0);
+        address oldController = controller;
+        controller = _newController;
+        ControllerChanged(oldController, controller);
+    }
+
+    /**
+     *
+     */
+    function clearController() external onlyOwner {
+        address oldController = controller;
+        controller = address(0);
+        ControllerChanged(oldController, controller);
+    }
 }
