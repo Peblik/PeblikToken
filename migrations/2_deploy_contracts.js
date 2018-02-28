@@ -26,10 +26,10 @@ module.exports = function(deployer) {
     const minAmount = new web3.BigNumber(10000);
     const maxAmount = new web3.BigNumber(100000);
 
-    //const wallet = 0xceae3fcf42f45f487ead642a00812f27e4d9334a;
+    const wallet0 = 0xceae3fcf42f45f487ead642a00812f27e4d9334a;
     //const tokenAddress = 0x7fd22367c432aa6fd7896c6d47e6da18d3b78e38;
 
-    const wallet0 = '0x627306090abaB3A6e1400e9345bC60c78a8BEf57';
+    //const wallet0 = '0x627306090abaB3A6e1400e9345bC60c78a8BEf57';
     const wallet1 = '0xf17f52151EbEF6C7334FAD080c5704D77216b732';
     const tokenAddress = '0x345ca3e014aaf5dca488057592ee47305d9b3e10';
 
