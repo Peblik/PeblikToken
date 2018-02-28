@@ -241,7 +241,7 @@ contract BaseTokenSale is Pausable {
 
         // mint tokens as we go
         token.mint(_buyer, tokens);
-/*
+
         // update this buyer's purchase total
         totalPurchase[_buyer] = totalAmount;
         // keep count of unique buyer addresses
@@ -258,20 +258,9 @@ contract BaseTokenSale is Pausable {
             capReached = true;
             CapReached(tokenCap, tokensSold);
         }
-    */
+/*    */
         return true;
     }
-
-    function getDollarPriceExternal(uint256 _value, uint256 _centsRaised, uint256 _tokensSold, address _buyer) public view returns (uint256 price) {
-        return pricing.getCurrentPrice(_value, _centsRaised, _tokensSold, _buyer);
-    }
-
-    function getToken() public view returns (uint256 value) {
-        //uint256 tokens = _centsAmount.div(price).mul(10 ** token.decimals());
-        //PeblikToken _token = PeblikToken(token);
-        return token.decimals();
-    }
-
 
     // 
     // @return true if buyers can buy at the moment
@@ -398,4 +387,43 @@ contract BaseTokenSale is Pausable {
 		ERC20Basic strandedToken = ERC20Basic(_token);
 		return strandedToken.transfer(_to, strandedToken.balanceOf(this));
 	}
+
+
+    /** Testing functions */
+
+    function getDollarPriceExternal(uint256 _value, uint256 _centsRaised, uint256 _tokensSold, address _buyer) public view returns (uint256 price) {
+        return pricing.getCurrentPrice(_value, _centsRaised, _tokensSold, _buyer);
+    }
+
+    function getToken() public payable returns (uint256 value) {
+        uint256 price = getDollarPrice(0,0,0, msg.sender);
+        uint256 weiAmount = msg.value;
+
+        uint256 ethAmount = weiAmount.div(1 ether); 
+        uint256 _centsAmount = ethAmount.mul(centsPerEth);
+        uint256 tokens = _centsAmount.div(price).mul(10 ** token.decimals());
+        //PeblikToken _token = PeblikToken(token);
+        return tokens;
+    }
+
+    function getTokenOwner() public returns (address value) {
+        return token.owner();
+    }
+
+    function getTokenOnlyOwner() public returns (bool value) {
+        return msg.sender == token.owner();
+    }
+
+    function getTokenPaused() public returns (bool value) {
+        return token.paused();
+    }
+
+    function getTokenCanMint() public returns (bool value) {
+        return token.mintingFinished();
+    }
+
+    function getOwner() public returns (address value) {
+        return owner;
+    }
+
 }

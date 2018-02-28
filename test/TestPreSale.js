@@ -20,14 +20,21 @@ contract('PeblikPresale', function(accounts) {
 
     it('add To Early list', function(done){
         PeblikPresale.deployed().then(async function(instance) {
-            var isListed = await instance.isEarlylisted(accounts[1]);
-            if (!isListed) {
-                await instance.addToEarlylist(accounts[1]);
-                isListed = await instance.isEarlylisted(accounts[1]);
-            }
 
             try {
+                var isListed = await instance.isEarlylisted(accounts[1]);
+                if (!isListed) {
+                    await instance.addToEarlylist(accounts[1]);
+                    isListed = await instance.isEarlylisted(accounts[1]);
+                }
                 assert.equal(isListed, true, 'Early listed Failed');
+                isListed = await instance.isEarlylisted(accounts[0]);
+                if (!isListed) {
+                    await instance.addToEarlylist(accounts[0]);
+                    isListed = await instance.isEarlylisted(accounts[0]);
+                }
+                assert.equal(isListed, true, 'Early listed Failed');
+
                 done();
             } catch (error) {
                 console.log(error);
@@ -38,16 +45,23 @@ contract('PeblikPresale', function(accounts) {
 
     it('is White Listed', function(done){
         PeblikPresale.deployed().then(async function(instance) {
-            var isListed = await instance.isWhitelisted(accounts[0]);
-            
-            if (!isListed) {
-                await instance.addToWhitelist(accounts[0]);
-                isListed = await instance.isWhitelisted(accounts[0]);
-            }
 
             try {
+                var isListed = await instance.isWhitelisted(accounts[2]);
+            
+                if (!isListed) {
+                    await instance.addToWhitelist(accounts[2]);
+                    isListed = await instance.isWhitelisted(accounts[2]);
+                }
                 assert.equal(isListed, true, 'Is White listed Failed');
-                done();
+                isListed = await instance.isWhitelisted(accounts[3]);
+            
+                if (!isListed) {
+                    await instance.addToWhitelist(accounts[3]);
+                    isListed = await instance.isWhitelisted(accounts[3]);
+                }
+                assert.equal(isListed, true, 'Is White listed Failed');
+                 done();
             } catch (error) {
                 console.log(error);
                 done(error);                    
@@ -58,9 +72,11 @@ contract('PeblikPresale', function(accounts) {
 
     it('is Listed', function(done){
         PeblikPresale.deployed().then(async function(instance) {
-            var isListed = await instance.isListed(accounts[1]);
             
             try {
+                var isListed = await instance.isListed(accounts[0]);
+                assert.equal(isListed, true, 'Is listed Failed');
+                isListed = await instance.isListed(accounts[1]);
                 assert.equal(isListed, true, 'Is listed Failed');
                 done();
             } catch (error) {
@@ -100,13 +116,53 @@ contract('PeblikPresale', function(accounts) {
         });
     });
 
+    it('Get Token and Presale Variables', function(done){
+        PeblikPresale.deployed().then(async function(instance) {
+            try { 
+                const tokenAmount = 1 * 1000000000000000000;
+                var token = await instance.getToken.call({value: tokenAmount, from:accounts[0]});
+                console.log("Tokens created: " + token.toNumber());
+                var tokenOwner = await instance.getTokenOwner.call();
+                console.log("Token owner: " + tokenOwner);
+                var tokenPaused = await instance.getTokenPaused.call();
+                console.log("Token Paused: " + tokenPaused);
+                var tokenCanMint = await instance.getTokenCanMint.call();
+                console.log("Token Is Finished Minting: " + tokenCanMint);
+                var tokenOnlyOwner = await instance.getTokenOnlyOwner.call();
+                console.log("Token no account getTokenOnlyOwner: " + tokenOnlyOwner);
+                var tokenOnlyOwner = await instance.getTokenOnlyOwner.call({from:accounts[0]});
+                console.log("Token account 0 getTokenOnlyOwner: " + tokenOnlyOwner);
+                var tokenOnlyOwner = await instance.getTokenOnlyOwner.call({from:accounts[1]});
+                console.log("Token account 1 getTokenOnlyOwner: " + tokenOnlyOwner);
+
+                var owner = await instance.getOwner.call();
+                console.log("PreSale Owner: " + owner);
+                var validX = await instance.validPurchasePublic.call(accounts[0]);
+                console.log("PreSale Valid Purchase for " + accounts[0] + ": " + validX);
+                validX = await instance.validPurchasePublic.call(accounts[1]);
+                console.log("PreSale Valid Purchase for " + accounts[1] + ": " + validX);
+                validX = await instance.validPurchasePublic.call(accounts[2]);
+                console.log("PreSale Valid Purchase for " + accounts[2] + ": " + validX);
+                validX = await instance.validPurchasePublic.call(accounts[3]);
+                console.log("PreSale Valid Purchase for " + accounts[3] + ": " + validX);
+
+                assert.equal(true, true, 'Get Token and Presale Variables Failed');
+                done();
+            } catch (error) {
+                console.log(error);
+                done(error);                
+            }
+        });
+    });
+
     it('Buy Tokens', function(done){
         PeblikPresale.deployed().then(async function(instance) {
             //var isListed = await instance.isListed(accounts[1]);
             var isPurchased = false;
+            const tokenAmount = 1 * 1000000000000000000;
             //console.log(accounts[0]);
             try {
-                var tx = await instance.buyTokens.call({value: 1e+18, from:accounts[0]});
+                var tx = await instance.buyTokens.call({value: tokenAmount, from:accounts[0]}); //, from:accounts[0]
                 //console.log(tx);
                 assert.isOk(tx, 'Buy Tokens Failed');
                 //assert.equal(tx, true, 'Buy Tokens Failed');
@@ -117,8 +173,7 @@ contract('PeblikPresale', function(accounts) {
             }
         });
     });
-
-    
+   
     it('External Purchase', function(done){
         PeblikPresale.deployed().then(async function(instance) {
             //var isListed = await instance.isListed(accounts[1]);
@@ -135,8 +190,7 @@ contract('PeblikPresale', function(accounts) {
             }
         });
     });
-
-
+ /**/
     it('Price Changed correctly', function(done){
         PeblikPresale.deployed().then(async function(instance) {
             const _value = 0;
@@ -156,21 +210,6 @@ contract('PeblikPresale', function(accounts) {
                 done(error);               
             }            
        });
-    });
-
-
-    it('Get Token', function(done){
-        PeblikPresale.deployed().then(async function(instance) {
-            try {
-                var token = await instance.getToken.call();
-                console.log(token);
-                assert.equal(true, true, 'Get Token Failed');
-                done();
-            } catch (error) {
-                console.log(error);
-                done(error);                
-            }
-        });
     });
 
 

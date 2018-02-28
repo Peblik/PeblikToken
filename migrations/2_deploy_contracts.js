@@ -29,12 +29,12 @@ module.exports = function(deployer) {
     //const wallet = 0xceae3fcf42f45f487ead642a00812f27e4d9334a;
     //const tokenAddress = 0x7fd22367c432aa6fd7896c6d47e6da18d3b78e38;
 
-    const wallet0 = 0x627306090abaB3A6e1400e9345bC60c78a8BEf57;
-    const wallet1 = 0xf17f52151EbEF6C7334FAD080c5704D77216b732;
-    const tokenAddress = 0x345ca3e014aaf5dca488057592ee47305d9b3e10;
+    const wallet0 = '0x627306090abaB3A6e1400e9345bC60c78a8BEf57';
+    const wallet1 = '0xf17f52151EbEF6C7334FAD080c5704D77216b732';
+    const tokenAddress = '0x345ca3e014aaf5dca488057592ee47305d9b3e10';
 
-    //console.log("dt: " + dt + " Token Address: " + tokenAddress + " earlyTime: " + earlyTime  + " startTime: " + startTime + " endTime: " + endTime + " centsPerToken: " + centsPerToken 
-    //+ " centsPerEth: " + centsPerEth + " cap: " + cap + " minAmount: " + minAmount + " maxAmount: " + minAmount + " wallet: " + wallet0);
+    console.log("Token Address: " + Token.address + " earlyTime: " + earlyTime  + " startTime: " + startTime + " endTime: " + endTime + " centsPerToken: " + centsPerToken 
+    + " centsPerEth: " + centsPerEth + " cap: " + cap + " minAmount: " + minAmount + " maxAmount: " + minAmount + " wallet: " + wallet0);
     //address _token, uint256 _startTime, uint256 _endTime, uint256 _centsPerToken, uint256 _centsPerEth, uint256 _cap, uint256 _min, uint256 _max, address _wallet
     //deployer.deploy(BaseTokenSale, tokenAddress, startTime, endTime, centsPerToken, centsPerEth, cap, minAmount, maxAmount, wallet);
     //address _token, uint256 _earlyTime, uint256 _startTime, uint256 _endTime, uint256 _centsPerToken, uint256 _centsPerEth, uint256 _cap, uint256 _min, uint256 _max, address _wallet

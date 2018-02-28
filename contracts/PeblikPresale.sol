@@ -64,7 +64,7 @@ contract PeblikPresale is BaseTokenSale {
      * @return true if buyers can buy at the moment
      */
     function validPurchase(address _buyer) internal view returns (bool) {
-        /*
+    /*
         if (now >= earlyTime) {
             //return true;
             if (now <= endTime) {
@@ -96,8 +96,8 @@ contract PeblikPresale is BaseTokenSale {
         } else {
             return false;
         }
-        */
-        
+    */
+
         if (now >= earlyTime && now <= endTime && !capReached) {
             if (now < startTime) {
                 // in early period
@@ -111,7 +111,7 @@ contract PeblikPresale is BaseTokenSale {
                 } 
             }
         }
-        
+
         return false;
     }
 
@@ -154,5 +154,58 @@ contract PeblikPresale is BaseTokenSale {
         // @return true if buyer is listed at all
     function isListed(address _buyer) public view returns (bool) {
         return (whitelist[_buyer] || earlylist[_buyer]);
+    }
+
+    /** testing methods */
+    function validPurchasePublic(address _buyer) public view returns (bool) {
+    /*
+        if (now >= earlyTime) {
+            //return true;
+            if (now <= endTime) {
+                //return true;
+                if (!capReached) {
+                    //return true;
+                    if (now < startTime) {
+                        //return true;
+                        // in early period
+                        if (isEarlylisted(_buyer)) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    } else {
+                        // in main sale period
+                        if (isListed(_buyer)) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    */
+
+        if (now >= earlyTime && now <= endTime && !capReached) {
+            if (now < startTime) {
+                // in early period
+                if (isEarlylisted(_buyer)) {
+                    return true;
+                }
+            } else {
+                // in main sale period
+                if (isListed(_buyer)) {
+                    return true;
+                } 
+            }
+        }
+
+        return false;
     }
 }
