@@ -2,7 +2,7 @@ var PeblikToken = artifacts.require("PeblikToken");
 
 contract('PeblikToken', function(accounts) {
 
-    it('should start non-transferable', function(done){
+    it('should start non-transferable', function(done) {
         PeblikToken.deployed().then(async function(instance) { 
             try {
                 const isTransferable = await instance.transferable.call();
@@ -138,4 +138,16 @@ contract('PeblikToken', function(accounts) {
        });
     });
 
+    it('can change the controller', function(done){
+        PeblikToken.deployed().then(async function(instance) { 
+            try {
+                await instance.setController(accounts[7]); // not the real contract address -- just for testing
+                const controllerAddr = await instance.controller.call();
+                assert.equal(controllerAddr, accounts[7], 'Controller address does not match');
+                done();
+            } catch (error) {
+                done(error);
+            }
+       });
+    });
 });
