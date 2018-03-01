@@ -98,7 +98,7 @@ contract PeblikToken is TransferableToken, MintableToken {
     * @param _amount The amount of tokens to mint.
     * @return A boolean that indicates if the operation was successful.
     */
-    function mint(address _to, uint256 _amount) onlyOwnerOrController canMint whenNotPaused public returns (bool) { // onlyOwner canMint whenNotPaused
+    function mint(address _to, uint256 _amount) onlyOwnerOrController canMint whenNotPaused public returns (bool) { 
         if (totalSupply_.add(_amount) > availableSupply) {
             return false;
         }

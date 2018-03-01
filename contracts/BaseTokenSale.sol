@@ -162,6 +162,7 @@ contract BaseTokenSale is Pausable {
         if (!buyWithCents(msg.sender, centsAmount)) {
             revert();
         }
+
         centsRaised = centsRaised.add(centsAmount);
         weiRaised = weiRaised.add(weiAmount);
 
@@ -190,7 +191,6 @@ contract BaseTokenSale is Pausable {
     }
 
     function buyWithCents(address _buyer, uint256 _centsAmount) internal returns (bool success) {
-
         // check purchase history
         uint256 totalAmount = _centsAmount;
         uint256 newBuyer = 0;
