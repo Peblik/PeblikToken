@@ -162,7 +162,6 @@ contract BaseTokenSale is Pausable {
         if (!buyWithCents(msg.sender, centsAmount)) {
             revert();
         }
-
         centsRaised = centsRaised.add(centsAmount);
         weiRaised = weiRaised.add(weiAmount);
 
@@ -191,6 +190,7 @@ contract BaseTokenSale is Pausable {
     }
 
     function buyWithCents(address _buyer, uint256 _centsAmount) internal returns (bool success) {
+
         // check purchase history
         uint256 totalAmount = _centsAmount;
         uint256 newBuyer = 0;
@@ -375,7 +375,7 @@ contract BaseTokenSale is Pausable {
     }
 
     function calcTokens(uint256 weiAmount) public view returns (uint256 value) {
-        uint256 price = getDollarPrice(0,0,0, msg.sender);
+        uint256 price = getDollarPrice(weiAmount, 0, 0, msg.sender);
 
         uint256 centsAmount = weiAmount.mul(centsPerEth).div(1 ether);
         uint256 tokens = centsAmount.mul(10 ** token.decimals()).div(price);

@@ -62,7 +62,6 @@ contract PeblikTokenSale is BaseTokenSale {
         require(capReached || now > endTime); 
         saleComplete = true;
 
-        PeblikToken token = PeblikToken(tokenAddress);
         // allocate and transfer all allocations to other wallets
         token.mint(employeePoolWallet, employeePoolAmount);
         token.mint(advisorPoolWallet, advisorPoolAmount);
