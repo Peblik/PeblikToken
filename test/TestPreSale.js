@@ -11,7 +11,7 @@ contract('PeblikPresale', function(accounts) {
     const buyer4 = accounts[5];
     const pmtSrc = accounts[6];
     const wallet1 = accounts[7];
-    const wallet2 = accounts[9];
+    const wallet2 = accounts[8];
 
     let presaleContract;
     let tokenContract;
@@ -204,38 +204,36 @@ contract('PeblikPresale', function(accounts) {
         }
     });
 
-    it('should mint tokens and send to recipient', function(done){
-        PeblikToken.deployed().then(async function(instance) {
-            try {
-                const tokenAmount = 20 * 1000000000000000000;
-                const recipient = accounts[1]; //address(0xf17f52151EbEF6C7334FAD080c5704D77216b732);
-                const totalExpected = (await tokenContract.totalSupply()).toNumber() + tokenAmount;
-                const balanceExpected = (await tokenContract.balanceOf(recipient)).toNumber() + tokenAmount;
-                //console.log(totalExpected);
-                //console.log(balanceExpected);
-                await tokenContract.mint(recipient, tokenAmount).then((result) => { //50e18, or 50 full tokens
-                    //console.log(result);
-                    for (var i = 0; i < result.logs.length; i++) {
-                        var log = result.logs[i];
-                        //console.log(log);
-                        RecordLog(log);
-                    }
-                    //utils.assertEvent(presaleContract, { event: "Mint", logIndex: 0, args: { to: buyer1, amount: 1000000000000000000 }})
-                 }); 
-                
-                const totalSupply = await tokenContract.totalSupply();
-                const balance = await tokenContract.balanceOf(recipient);
-                //console.log(totalSupply);
-                //console.log(balance);
-                //console.log("totalExpected: " + totalExpected + " totalSupply: " + totalSupply);
-                //console.log("balanceExpected: " + balanceExpected + " balance: " + balance);    
-                assert.equal(balance.toNumber(), balanceExpected, 'Balance did not increase correctly');
-                assert.equal(totalSupply.toNumber(), totalExpected, 'Total supply did not increase correctly');          
-                done();
-            } catch (error) {
-                done(error);
-            }
-       });
+    it('should mint tokens and send to recipient', async function(){
+        try {
+            const tokenAmount = 20 * 1000000000000000000;
+            const recipient = accounts[1]; //address(0xf17f52151EbEF6C7334FAD080c5704D77216b732);
+            const totalExpected = (await tokenContract.totalSupply()).toNumber() + tokenAmount;
+            const balanceExpected = (await tokenContract.balanceOf(recipient)).toNumber() + tokenAmount;
+            //console.log(totalExpected);
+            //console.log(balanceExpected);
+            await tokenContract.mint(recipient, tokenAmount).then((result) => { //50e18, or 50 full tokens
+                //console.log(result);
+                for (var i = 0; i < result.logs.length; i++) {
+                    var log = result.logs[i];
+                    //console.log(log);
+                    RecordLog(log);
+                }
+                //utils.assertEvent(presaleContract, { event: "Mint", logIndex: 0, args: { to: buyer1, amount: 1000000000000000000 }})
+             }); 
+            
+            const totalSupply = await tokenContract.totalSupply();
+            const balance = await tokenContract.balanceOf(recipient);
+            //console.log(totalSupply);
+            //console.log(balance);
+            //console.log("totalExpected: " + totalExpected + " totalSupply: " + totalSupply);
+            //console.log("balanceExpected: " + balanceExpected + " balance: " + balance);    
+            assert.equal(balance.toNumber(), balanceExpected, 'Balance did not increase correctly');
+            assert.equal(totalSupply.toNumber(), totalExpected, 'Total supply did not increase correctly');          
+
+        } catch (error) {
+            console.log(error);
+        }
     });
   
     it('makes external purchase', async function() {
@@ -355,8 +353,6 @@ contract('PeblikPresale', function(accounts) {
         }
     });
 
-
-
     /*
 
     claimStrandedTokens(address _token, address _to) public onlyOwner returns (bool)
@@ -414,7 +410,7 @@ contract('PeblikPresale', function(accounts) {
             assert.equal(isCapReached, false, 'buys tokens after Rate Change and Wallet - Cap Reached Failed');
 
             const totalExpected = (await tokenContract.totalSupply()).toNumber();
-            const buyerExpected = (await tokenContract.balanceOf(buyer1)).toNumber();
+            const buyerExpected = (await tokenContract.balanceOf(buyer2)).toNumber();
             const walletExpected = (await web3.eth.getBalance(wallet2)).toNumber();
             const walletOldExpected = (await web3.eth.getBalance(wallet1)).toNumber();
 
@@ -451,7 +447,6 @@ contract('PeblikPresale', function(accounts) {
             console.log(error);              
         }
     });
-
 
     it('change Start Time', async function() {
         try {
