@@ -27,8 +27,7 @@ contract BaseTokenSale is Pausable {
     // From Crowdsale.sol --------------------
 
     // The token being sold
-    address public tokenAddress; 
-    //PeblikToken public token;
+    PeblikToken public token;
 
     // start and end timestamps where investments are allowed (both inclusive)
     uint256 public startTime;
@@ -125,8 +124,7 @@ contract BaseTokenSale is Pausable {
 
         owner = msg.sender;
 
-        //token = PeblikToken(_token);
-        tokenAddress = _token;
+        token = PeblikToken(_token);
         startTime = _startTime;
         endTime = _endTime;
         centsPerEth = _centsPerEth;
@@ -154,39 +152,21 @@ contract BaseTokenSale is Pausable {
     /**
      * @dev Purchase tokens with Ether.
      */
-    function buyTokens() whenNotPaused public payable { // whenNotPaused public payable
+    function buyTokens() whenNotPaused public payable {
         require(validPurchase(msg.sender));
+        
         uint256 weiAmount = msg.value;
+        uint256 centsAmount = weiAmount.mul(centsPerEth).div(1 ether);
+        //uint256 tokens = centsAmount.div(price).mul(10 ** token.decimals());
 
-        // TODO: do we need to check wei limits at all, or just convert to USD?
-        // -- concerned about whether certain transactions will get stuck due to conversion rate discrepancies
- 
-        /*
-        if (weiAmount < minWei)
-        {
-            PurchaseError("Below minimum purchase amount.");
-            revert();
-        } else if (weiAmount > maxWei) {
-            PurchaseError("Above maximum purchase amount.");
-            revert();
-        }
-        */
-
-
-        uint256 ethAmount = weiAmount.div(1 ether); 
-        uint256 centsAmount = ethAmount.mul(centsPerEth);
-       
- 
         if (!buyWithCents(msg.sender, centsAmount)) {
             revert();
         }
-
         centsRaised = centsRaised.add(centsAmount);
         weiRaised = weiRaised.add(weiAmount);
 
         // send out the funds
         wallet.transfer(weiAmount);
-
     }
 
     /**
@@ -210,16 +190,16 @@ contract BaseTokenSale is Pausable {
     }
 
     function buyWithCents(address _buyer, uint256 _centsAmount) internal returns (bool success) {
+
         // check purchase history
         uint256 totalAmount = _centsAmount;
         uint256 newBuyer = 0;
 
-     
         if (totalPurchase[_buyer] != 0) {
             totalAmount = totalAmount.add(_centsAmount);
             newBuyer = 1;
         }
-        
+
         if (_centsAmount < minCents) {
             // single purchase must meet the minimum
             PurchaseError("Below minimum purchase amount.", _buyer);
@@ -237,10 +217,10 @@ contract BaseTokenSale is Pausable {
             PurchaseError("Price is zero.", _buyer);
             return false;
         }
-        PeblikToken token = PeblikToken(tokenAddress);
+
         // Convert to a token amount with decimals 
         uint256 tokens = _centsAmount.mul(10 ** token.decimals()).div(price);
-
+        
         // mint tokens as we go
         token.mint(_buyer, tokens);
 
@@ -258,7 +238,6 @@ contract BaseTokenSale is Pausable {
             capReached = true;
             CapReached(tokenCap, tokensSold);
         }
-        
         return true;
     }
 
@@ -396,10 +375,9 @@ contract BaseTokenSale is Pausable {
     }
 
     function calcTokens(uint256 weiAmount) public view returns (uint256 value) {
-        uint256 price = getDollarPrice(0,0,0, msg.sender);
+        uint256 price = getDollarPrice(weiAmount, 0, 0, msg.sender);
 
         uint256 centsAmount = weiAmount.mul(centsPerEth).div(1 ether);
-        PeblikToken token = PeblikToken(tokenAddress);
         uint256 tokens = centsAmount.mul(10 ** token.decimals()).div(price);
 
         return tokens;
@@ -407,16 +385,20 @@ contract BaseTokenSale is Pausable {
 
     function calcCentsToTokens(uint256 centsAmount) public view returns (uint256 value) {
         uint256 price = getDollarPrice(0,0,0, msg.sender);
-        PeblikToken token = PeblikToken(tokenAddress);
         uint256 tokens = centsAmount.mul(10 ** token.decimals()).div(price);
 
         return tokens;
     }
 
+    function calcCentsToWei(uint256 centsAmount) public view returns (uint256 value) {
+        uint256 weiAmount = centsAmount.mul(1 ether).div(centsPerEth);
+        return weiAmount;
+    }
+
     function calcCentsToTokensValidate(address buyer, uint256 centsAmount) public view returns (bool value) {
-        //if (buyer == address(0x0)) {
-        //    return false;
-        //}
+        if (buyer == address(0x0)) {
+            return false;
+        }
         if (!validPurchase(buyer)) {
             return false;
         }
@@ -424,7 +406,7 @@ contract BaseTokenSale is Pausable {
             return false;
         }
 
-        //require(buyer != address(0x0));
+        require(buyer != address(0x0));
         require(validPurchase(buyer));
         require(msg.sender == paymentSource); // transaction must come from pre-approved address
 
@@ -455,7 +437,6 @@ contract BaseTokenSale is Pausable {
             return false;
         }
 
-        PeblikToken token = PeblikToken(tokenAddress);
         uint256 tokens = centsAmount.mul(10 ** token.decimals()).div(price);
         if (tokens <= 0 ) {
             //PurchaseError("Zero Tokens created.", msg.sender);
@@ -466,12 +447,10 @@ contract BaseTokenSale is Pausable {
     }
 
     function getTokenOwner() public view returns (address value) {
-        PeblikToken token = PeblikToken(tokenAddress);
         return token.owner();
     }
 
     function getTokenController() public view returns (address value) {
-        PeblikToken token = PeblikToken(tokenAddress);
         return token.controller();
     }
 
@@ -480,17 +459,14 @@ contract BaseTokenSale is Pausable {
     }
 
     function getTokenOnlyOwner() public view returns (bool value) {
-        PeblikToken token = PeblikToken(tokenAddress);
         return msg.sender == token.owner();
     }
 
     function getTokenPaused() public view returns (bool value) {
-        PeblikToken token = PeblikToken(tokenAddress);
         return token.paused();
     }
 
     function getTokenCanMint() public view returns (bool value) {
-        PeblikToken token = PeblikToken(tokenAddress);
         return token.mintingFinished();
     }
 
@@ -502,24 +478,23 @@ contract BaseTokenSale is Pausable {
         return owner;
     }
 
-    function totalSupply() public view returns (uint256 balance) {
-        PeblikToken token = PeblikToken(tokenAddress);
-        return token.totalSupply();
+    function getTokensSold() public view returns (uint256 value) {
+        return tokensSold;
     }
 
-    function balanceOf(address _owner) public view returns (uint256 balance) {
-        PeblikToken token = PeblikToken(tokenAddress);
-        return token.balanceOf(_owner);
+    function getTokenCap() public view returns (uint256 value) {
+        return tokenCap;
     }
 
-    function balances() public view returns (uint256 balance) {
-        PeblikToken token = PeblikToken(tokenAddress);
-        return token.balanceOf(msg.sender);
+    function getStartTime() public view returns (uint256 value) {
+        return startTime;
     }
 
-    function mintTokens() public returns (bool) {
-        PeblikToken token = PeblikToken(tokenAddress);
-        return token.mint(msg.sender, 1 * 1000000000000000000);
+    function getEndTime() public view returns (uint256 value) {
+        return endTime;
     }
 
+    function getConversionRate() public view returns (uint256 value) {
+        return centsPerEth;
+    }
 }

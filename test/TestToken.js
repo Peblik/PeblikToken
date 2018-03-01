@@ -43,7 +43,6 @@ contract('PeblikToken', function(accounts) {
                 //console.log(error);  
                 done(error);              
             }
-            
        });
     });
 
@@ -72,7 +71,7 @@ contract('PeblikToken', function(accounts) {
     });
 
     /** Need to catch the revert () in the following test */
-    
+   
     it('should not be able to transfer tokens yet', function(done){
         PeblikToken.deployed().then(async function(instance) {
             const tokenAmount = 20 * 1000000000000000000;
