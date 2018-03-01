@@ -64,6 +64,39 @@ contract PeblikPresale is BaseTokenSale {
      * @return true if buyers can buy at the moment
      */
     function validPurchase(address _buyer) internal view returns (bool) {
+        if (now >= earlyTime) {
+            //return true;
+            if (now <= endTime) {
+                //return true;
+                if (!capReached) {
+                    return true;
+                    if (now < startTime) {
+                        return true;
+                        // in early period
+                        if (isEarlylisted(_buyer)) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    } else {
+                        // in main sale period
+                        if (isListed(_buyer)) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+
+/*
         if (now >= earlyTime && now <= endTime && !capReached) {
             if (now < startTime) {
                 // in early period
@@ -77,8 +110,8 @@ contract PeblikPresale is BaseTokenSale {
                 } 
             }
         }
-
-        return false;
+*/
+        return false;        
     }
 
     /**

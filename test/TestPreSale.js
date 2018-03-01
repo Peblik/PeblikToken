@@ -117,7 +117,7 @@ contract('PeblikPresale', function(accounts) {
 
     it('gets token and presale variables', async function(){
         try { 
-            /*
+            
             const weiAmount = 1 * 1000000000000000000;
             var tokenAmount = await presaleContract.calcTokens.call(weiAmount);
             console.log("Tokens for 1 ether: " + tokenAmount);
@@ -148,7 +148,7 @@ contract('PeblikPresale', function(accounts) {
             console.log("PreSale Valid Purchase for " + buyer2 + ": " + validX);
             validX = await presaleContract.validPurchasePublic.call(buyer3);
             console.log("PreSale Valid Purchase for " + buyer3 + ": " + validX);
-            */
+            
             assert.equal(true, true, 'Get Token and Presale Variables Failed');
         } catch (error) {
             console.log(error);
@@ -164,10 +164,11 @@ contract('PeblikPresale', function(accounts) {
             const balanceExpected = (await tokenContract.balanceOf(buyer1)).toNumber() + tokenAmount;
             const pretotalExpected = (await presaleContract.totalSupply()) + tokenAmount;
             const prebalanceExpected = (await presaleContract.balanceOf(buyer1)) + tokenAmount;
+
             // 
             //var isMinted = await presaleContract.mintTokens.call({ from: buyer1 }).then(function(addr,amt) { console.log("addr " + addr); console.log("amt " + amt);}); 
-            return await presaleContract.buyTokens({ value: weiAmount, from: buyer1 }).then((result) => { 
-                console.log(result);
+            await presaleContract.buyTokens({ value: weiAmount, from: buyer1 }).then((result) => { 
+                //console.log(result);
                 //console.log(result.logs[0].event);
                 //console.log(result.logs[1].event);
                 //utils.assertEvent(presaleContract, { event: "Mint", logIndex: 0, args: { to: buyer1, amount: 1000000000000000000 }});
@@ -181,121 +182,26 @@ contract('PeblikPresale', function(accounts) {
             const pretotalSupply = await presaleContract.totalSupply();
             const prebalance = await presaleContract.balanceOf(buyer1);
 
-            console.log("totalExpected: " + totalExpected + " totalSupply: " + totalSupply);
-            console.log("balanceExpected: " + balanceExpected + " balance: " + balance);
-            console.log("pretotalExpected: " + pretotalExpected + " pretotalSupply: " + pretotalSupply);
-            console.log("prebalanceExpected: " + prebalanceExpected + " prebalance: " + prebalance);
+            //console.log("totalExpected: " + totalExpected + " totalSupply: " + totalSupply);
+            //console.log("balanceExpected: " + balanceExpected + " balance: " + balance);
+            //console.log("pretotalExpected: " + pretotalExpected + " pretotalSupply: " + pretotalSupply);
+            //console.log("prebalanceExpected: " + prebalanceExpected + " prebalance: " + prebalance);
             assert.equal(balance.toNumber(), balanceExpected, 'Balance did not increase correctly');
             assert.equal(totalSupply.toNumber(), totalExpected, 'Total supply did not increase correctly');          
-
-            // check that the buyer got the right amount of tokens
-            //const buyerBal = await tokenContract.balanceOf.call(buyer1);
-            //assert.equal(buyerBal.toNumber(), tokenAmount.toNumber(), "Buyer has wrong amount of tokens");
-
-            // TODO: check that wei was transferred to correct wallet address
-            // TODO: check that tokensSold, totalSupply and availableSupply have been updated
-        } catch (error) {
-            console.log(error);              
-        }
-    });
-
-    it('buys after tokens', async function(){
-        try {
-            const totalSupply = await tokenContract.totalSupply();
-            const balanceo1 = await tokenContract.balanceOf(owner1);
-            const balanceo2 = await tokenContract.balanceOf(owner2);
-            const balance1 = await tokenContract.balanceOf(buyer1);
-            const balance2 = await tokenContract.balanceOf(buyer2);
-            const balance3 = await tokenContract.balanceOf(buyer3);
-            const balance4 = await tokenContract.balanceOf(buyer4);
-            const balancepmtSrc = await tokenContract.balanceOf(pmtSrc);
-            
-            const pretotalSupply = await presaleContract.totalSupply();
-            const prebalanceo1 = await presaleContract.balanceOf(owner1);
-            const prebalanceo2 = await presaleContract.balanceOf(owner2);
-            const prebalance1 = await presaleContract.balanceOf(buyer1);
-            const prebalance2 = await presaleContract.balanceOf(buyer2);
-            const prebalance3 = await presaleContract.balanceOf(buyer3);
-            const prebalance4 = await presaleContract.balanceOf(buyer4);
-            const prebalancepmtSrc = await presaleContract.balanceOf(pmtSrc);
-            const balances = await presaleContract.balances({ from: buyer1 });
-
-            console.log(" totalSupply: " + totalSupply);
-            console.log(" pretotalSupply: " + pretotalSupply);
-            console.log(" balanceo1: " + balanceo1);
-            console.log(" prebalanceo1: " + prebalanceo1);
-            console.log(" balanceo2: " + balanceo2);        
-            console.log(" prebalanceo2: " + prebalanceo2);        
-            console.log(" balance1: " + balance1);        
-            console.log(" prebalance1: " + prebalance1);        
-            console.log(" balance2: " + balance2);        
-            console.log(" prebalance2: " + prebalance2);        
-            console.log(" balance3: " + balance3);        
-            console.log(" prebalance3: " + prebalance3);        
-            console.log(" balance4: " + balance4);        
-            console.log(" prebalance4: " + prebalance4);        
-            console.log(" balancepmtSrc: " + balancepmtSrc);         
-            console.log(" prebalancepmtSrc: " + prebalancepmtSrc);         
-            console.log(" balances: " + balances);         
-
         } catch (error) {
             console.log(error);              
         }
     });
 
     it("should do something that fires Mint", async function() { 
-        return await presaleContract.mintTokens({ from: buyer3 }).then((result) => { 
-            console.log(result);
+        await presaleContract.mintTokens({ from: buyer3 }).then((result) => { 
+            //console.log(result);
             //console.log(result.logs[0].event);
             //console.log(result.logs[1].event);
             //utils.assertEvent(presaleContract, { event: "Mint", logIndex: 0, args: { to: buyer2, amount: 1000000000000000000 }});
         });
     });
 
-    it('buys after tokens', async function(){
-        try {
-            const totalSupply = await tokenContract.totalSupply();
-            const balanceo1 = await tokenContract.balanceOf(owner1);
-            const balanceo2 = await tokenContract.balanceOf(owner2);
-            const balance1 = await tokenContract.balanceOf(buyer1);
-            const balance2 = await tokenContract.balanceOf(buyer2);
-            const balance3 = await tokenContract.balanceOf(buyer3);
-            const balance4 = await tokenContract.balanceOf(buyer4);
-            const balancepmtSrc = await tokenContract.balanceOf(pmtSrc);
-            
-            const pretotalSupply = await presaleContract.totalSupply();
-            const prebalanceo1 = await presaleContract.balanceOf(owner1);
-            const prebalanceo2 = await presaleContract.balanceOf(owner2);
-            const prebalance1 = await presaleContract.balanceOf(buyer1);
-            const prebalance2 = await presaleContract.balanceOf(buyer2);
-            const prebalance3 = await presaleContract.balanceOf(buyer3);
-            const prebalance4 = await presaleContract.balanceOf(buyer4);
-            const prebalancepmtSrc = await presaleContract.balanceOf(pmtSrc);
-            const balances = await presaleContract.balances({ from: buyer1 });
-
-            console.log(" totalSupply: " + totalSupply);
-            console.log(" pretotalSupply: " + pretotalSupply);
-            console.log(" balanceo1: " + balanceo1);
-            console.log(" prebalanceo1: " + prebalanceo1);
-            console.log(" balanceo2: " + balanceo2);        
-            console.log(" prebalanceo2: " + prebalanceo2);        
-            console.log(" balance1: " + balance1);        
-            console.log(" prebalance1: " + prebalance1);        
-            console.log(" balance2: " + balance2);        
-            console.log(" prebalance2: " + prebalance2);        
-            console.log(" balance3: " + balance3);        
-            console.log(" prebalance3: " + prebalance3);        
-            console.log(" balance4: " + balance4);        
-            console.log(" prebalance4: " + prebalance4);        
-            console.log(" balancepmtSrc: " + balancepmtSrc);         
-            console.log(" prebalancepmtSrc: " + prebalancepmtSrc);         
-            console.log(" balances: " + balances);         
-
-        } catch (error) {
-            console.log(error);              
-        }
-    });
-   
     it('should mint tokens and send to recipient', function(done){
         PeblikToken.deployed().then(async function(instance) {
             try {
@@ -321,67 +227,50 @@ contract('PeblikPresale', function(accounts) {
             }
        });
     });
-   
-    it('buys after after tokens', async function() {
-        try {
-
-            const totalSupply = await tokenContract.totalSupply();
-            const balanceo1 = await tokenContract.balanceOf(owner1);
-            const balanceo2 = await tokenContract.balanceOf(owner2);
-            const balance1 = await tokenContract.balanceOf(buyer1);
-            const balance2 = await tokenContract.balanceOf(buyer2);
-            const balance3 = await tokenContract.balanceOf(buyer3);
-            const balance4 = await tokenContract.balanceOf(buyer4);
-            const balancepmtSrc = await tokenContract.balanceOf(pmtSrc);
-
-            const pretotalSupply = await presaleContract.totalSupply();
-            const prebalanceo1 = await presaleContract.balanceOf(owner1);
-            const prebalanceo2 = await presaleContract.balanceOf(owner2);
-            const prebalance1 = await presaleContract.balanceOf(buyer1);
-            const prebalance2 = await presaleContract.balanceOf(buyer2);
-            const prebalance3 = await presaleContract.balanceOf(buyer3);
-            const prebalance4 = await presaleContract.balanceOf(buyer4);
-            const prebalancepmtSrc = await presaleContract.balanceOf(pmtSrc);
-
-            console.log(" totalSupply: " + totalSupply);
-            console.log(" pretotalSupply: " + pretotalSupply);
-            console.log(" balanceo1: " + balanceo1);
-            console.log(" prebalanceo1: " + prebalanceo1);
-            console.log(" balanceo2: " + balanceo2);        
-            console.log(" prebalanceo2: " + prebalanceo2);        
-            console.log(" balance1: " + balance1);        
-            console.log(" prebalance1: " + prebalance1);        
-            console.log(" balance2: " + balance2);        
-            console.log(" prebalance2: " + prebalance2);        
-            console.log(" balance3: " + balance3);        
-            console.log(" prebalance3: " + prebalance3);        
-            console.log(" balance4: " + balance4);        
-            console.log(" prebalance4: " + prebalance4);        
-            console.log(" balancepmtSrc: " + balancepmtSrc);         
-            console.log(" prebalancepmtSrc: " + prebalancepmtSrc);         
-
-        } catch (error) {
-            console.log(error);              
-        }
-    });
-   
+  
     it('makes external purchase', async function() {
         var isPurchased = false;
         const centsAmount = 10000;
         try {
-            return await presaleContract.externalPurchase(buyer2, centsAmount, {from: pmtSrc}).then((result) => { 
+            const source = await presaleContract.paymentSource.call();
+            assert.equal(source, pmtSrc, 'makes external purchase - Payment Source Failed');
+            var isListed = await presaleContract.isEarlylisted(buyer2);
+            assert.equal(isListed, true, 'makes external purchase - Early listed Failed');
+            var isCapReached = await presaleContract.getcapReached();
+            console.log(isCapReached);
+            assert.equal(isCapReached, false, 'makes external purchase - Cap Reached Failed');
+
+            var tokenAmount = await presaleContract.calcCentsToTokens.call(centsAmount, {from: buyer2});
+            console.log(tokenAmount.toNumber());
+            
+            var tokenValid = await presaleContract.calcCentsToTokensValidate.call(buyer2, centsAmount, {from: pmtSrc});
+            console.log(tokenValid);
+            assert.equal(tokenValid, true, 'makes external purchase - calcCentsToTokensValidate Failed');
+
+            const totalExpected = (await tokenContract.totalSupply()).toNumber() + tokenAmount.toNumber();
+            const balanceExpected = (await tokenContract.balanceOf(buyer2)).toNumber() + tokenAmount.toNumber();
+            const pretotalExpected = (await presaleContract.totalSupply()) + tokenAmount.toNumber();
+            const prebalanceExpected = (await presaleContract.balanceOf(buyer2)) + tokenAmount.toNumber();
+
+            await presaleContract.externalPurchase(buyer2, centsAmount, {from: pmtSrc}).then((result) => { 
                 console.log(result);
                 //console.log(result.logs[0].event);
                 //console.log(result.logs[1].event);
                 //utils.assertEvent(presaleContract, { event: "Mint", logIndex: 0, args: { to: buyer2, amount: 1000000000000000000 }});
             });
-            //var tx = await presaleContract.externalPurchase.call(buyer2, centsAmount, {from: pmtSrc});
-            //console.log(tx);
-            //assert.equal(tx, true, 'External Purchase Failed');
 
-            // TODO: check that buyer's token balance was updated correctly
-            // TODO: check that wei was transferred to correct wallet address
-            // TODO: check that tokensSold, totalSupply and availableSupply have been updated
+            const totalSupply = await tokenContract.totalSupply();
+            const balance = await tokenContract.balanceOf(buyer2);
+            const pretotalSupply = await presaleContract.totalSupply();
+            const prebalance = await presaleContract.balanceOf(buyer2);
+
+            //console.log("totalExpected: " + totalExpected + " totalSupply: " + totalSupply);
+            //console.log("balanceExpected: " + balanceExpected + " balance: " + balance);
+            //console.log("pretotalExpected: " + pretotalExpected + " pretotalSupply: " + pretotalSupply);
+            //console.log("prebalanceExpected: " + prebalanceExpected + " prebalance: " + prebalance);
+            assert.equal(balance.toNumber(), balanceExpected, 'Balance did not increase correctly');
+            assert.equal(totalSupply.toNumber(), totalExpected, 'Total supply did not increase correctly');          
+
 
         } catch (error) {
             console.log(error);               
@@ -447,49 +336,4 @@ contract('PeblikPresale', function(accounts) {
             console.log(error);              
         }            
     });
-
-
-    /*
-    it('should unpause correctly', function(done){
-        PeblikPresale.deployed().then(async function(instance) {
-
-            await instance.unpause();
-            const isPaused = await instance.paused();
-
-            try {
-                assert.equal(isPaused, false, 'Token was not unpaused correctly');                
-            } catch (error) {
-                console.log(error);                
-            }
-            done();
-       });
-    });
-
-    it('should mint tokens and send to recipient', function(done){
-        PeblikPresale.deployed().then(async function(instance) {
-            const tokenAmount = 50 * 1000000000000000000;
-            const recipient = accounts[1]; //address(0xf17f52151EbEF6C7334FAD080c5704D77216b732);
-            const totalExpected = (await instance.totalSupply.call()).toNumber() + tokenAmount;
-            const balanceExpected = (await web3.eth.getBalance(recipient)).toNumber() + tokenAmount;
-
-            await instance.mint(recipient, tokenAmount); //50e18, or 50 full tokens
-            
-            const totalSupply = await instance.totalSupply.call();
-            const balance = await web3.eth.getBalance(recipient);
-
-            try {
-                assert.equal(balance.toNumber(), balanceExpected, 'Total supply did not increase correctly');                
-            } catch (error) {
-                console.log(error);
-            }
-            try {
-                assert.equal(totalSupply.toNumber(), totalExpected, 'Total supply did not increase correctly');               
-            } catch (error) {
-                console.log(error);                
-            }
-           
-            done();
-       });
-    });
-    */
 });
