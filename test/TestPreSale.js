@@ -10,12 +10,13 @@ contract('PeblikPresale', function(accounts) {
     const buyer3 = accounts[4];
     const buyer4 = accounts[5];
     const pmtSrc = accounts[6];
+    const wallet = accounts[7];
 
     let presaleContract;
     let tokenContract;
 
     before('setup contracts for all tests', async function () {
-
+        // cache instances of the contracts for use in all the tests
         PeblikPresale.deployed().then(async function (instance) {
             presaleContract = instance;
         });
@@ -26,7 +27,6 @@ contract('PeblikPresale', function(accounts) {
             const addr = tokenContract.address;
             console.log("token contract address = " + addr);   
         });
-    
     });
 
     it('changes payment source', async function() {
@@ -71,127 +71,163 @@ contract('PeblikPresale', function(accounts) {
         }    
     });
 
-    it('adds to whitelist', function(done){
-        PeblikPresale.deployed().then(async function(instance) {
-
-            try {
-                var isListed = await instance.isWhitelisted(buyer3);
-            
-                if (!isListed) {
-                    await instance.addToWhitelist(buyer3);
-                    isListed = await instance.isWhitelisted(buyer3);
-                }
-                assert.equal(isListed, true, 'Is White listed Failed');
-                isListed = await instance.isWhitelisted(buyer4);
-            
-                if (!isListed) {
-                    await instance.addToWhitelist(buyer4);
-                    isListed = await instance.isWhitelisted(buyer4);
-                }
-                assert.equal(isListed, true, 'Is White listed Failed');
-                 done();
-            } catch (error) {
-                console.log(error);
-                done(error);                    
+    it('adds to whitelist', async function() {
+        try {
+            var isListed = await presaleContract.isWhitelisted(buyer3);
+        
+            if (!isListed) {
+                await presaleContract.addToWhitelist(buyer3);
+                isListed = await presaleContract.isWhitelisted(buyer3);
             }
-       });
+            assert.equal(isListed, true, 'Is White listed Failed');
+
+            isListed = await presaleContract.isWhitelisted(buyer4);
+        
+            if (!isListed) {
+                await presaleContract.addToWhitelist(buyer4);
+                isListed = await presaleContract.isWhitelisted(buyer4);
+            }
+            assert.equal(isListed, true, 'Is White listed Failed');
+        } catch (error) {
+            console.log(error);                  
+        }
     });
 
-    it('correctly shows isListed', function(done){
-        PeblikPresale.deployed().then(async function(instance) {
-            
-            try {
-                var isListed = await instance.isListed(buyer1);
-                assert.equal(isListed, true, 'isListed Failed');
-                isListed = await instance.isListed(buyer3);
-                assert.equal(isListed, true, 'isListed Failed');
-                done();
-            } catch (error) {
-                console.log(error); 
-                done(error);                   
-            }
-       });
+    it('correctly shows isListed', async function() {
+        try {
+            var isListed = await presaleContract.isListed(buyer1);
+            assert.equal(isListed, true, 'isListed Failed');
+            isListed = await presaleContract.isListed(buyer3);
+            assert.equal(isListed, true, 'isListed Failed');
+        } catch (error) {
+            console.log(error);                   
+        }
     });
 
-    it('gets time', function(done){
-        PeblikPresale.deployed().then(async function(instance) {
-            var currentDate = Math.round((new Date().getTime()) / 1000);
-            try {
-                var timex = await instance.getTime.call();
-                var testit = timex.toNumber() <= currentDate;
-                //console.log(testit);
-                assert.equal(testit, true, 'Get Time Failed');
-                done();
-            } catch (error) {
-                console.log(error);
-                done(error);                
-            }
-        });
+    it('gets time', async function() {
+        var currentDate = Math.round((new Date().getTime()) / 1000);
+        try {
+            var timex = await presaleContract.getTime.call();
+            var testit = timex.toNumber() <= currentDate;
+            //console.log(testit);
+            assert.equal(testit, true, 'Get Time Failed');
+        } catch (error) {
+            console.log(error);               
+        }
     });
 
-    it('gets token and presale variables', function(done){
-        PeblikPresale.deployed().then(async function(instance) {
-            try { 
-                const weiAmount = 1 * 1000000000000000000;
-                var tokenAmount = await instance.calcTokens.call(weiAmount);
-                console.log("Tokens for 1 ether: " + tokenAmount);
-                var tokenOwner = await instance.getTokenOwner.call();
-                console.log("Token owner: " + tokenOwner);
-                var tokenController = await instance.getTokenController.call();
-                console.log("Token controller: " + tokenController);
-                var paymentSource = await instance.getPaymentSource.call();
-                console.log("Payment source: " + paymentSource);
-                var tokenPaused = await instance.getTokenPaused.call();
-                console.log("Token Paused: " + tokenPaused);
-                var tokenCanMint = await instance.getTokenCanMint.call();
-                console.log("Token Is Finished Minting: " + tokenCanMint);
-                var tokenOnlyOwner = await instance.getTokenOnlyOwner.call();
-                console.log("Token no account getTokenOnlyOwner: " + tokenOnlyOwner);
-                var tokenOnlyOwner = await instance.getTokenOnlyOwner.call({from:owner1});
-                console.log("Token account 0 getTokenOnlyOwner: " + tokenOnlyOwner);
-                var tokenOnlyOwner = await instance.getTokenOnlyOwner.call({from:buyer1});
-                console.log("Token account 3 getTokenOnlyOwner: " + tokenOnlyOwner);
+    it('gets token and presale variables', async function() {
+        try { 
+            const weiAmount = 1 * 1000000000000000000;
+            var tokenAmount = await presaleContract.calcTokens.call(weiAmount);
+            console.log("Tokens for 1 ether: " + tokenAmount);
+            var tokenOwner = await presaleContract.getTokenOwner.call();
+            console.log("Token owner: " + tokenOwner);
+            var tokenController = await presaleContract.getTokenController.call();
+            console.log("Token controller: " + tokenController);
+            var paymentSource = await presaleContract.getPaymentSource.call();
+            console.log("Payment source: " + paymentSource);
+            var tokenPaused = await presaleContract.getTokenPaused.call();
+            console.log("Token Paused: " + tokenPaused);
+            var tokenCanMint = await presaleContract.getTokenCanMint.call();
+            console.log("Token Is Finished Minting: " + tokenCanMint);
+            var tokenOnlyOwner = await presaleContract.getTokenOnlyOwner.call();
+            console.log("Token no account getTokenOnlyOwner: " + tokenOnlyOwner);
+            var tokenOnlyOwner = await presaleContract.getTokenOnlyOwner.call({from:owner1});
+            console.log("Token account 0 getTokenOnlyOwner: " + tokenOnlyOwner);
+            var tokenOnlyOwner = await presaleContract.getTokenOnlyOwner.call({from:buyer1});
+            console.log("Token account 3 getTokenOnlyOwner: " + tokenOnlyOwner);
 
-                var owner = await instance.getOwner.call();
-                console.log("PreSale Owner: " + owner);
-                var validX = await instance.validPurchasePublic.call(owner1);
-                console.log("PreSale Valid Purchase for " + owner1 + ": " + validX);
-                validX = await instance.validPurchasePublic.call(buyer1);
-                console.log("PreSale Valid Purchase for " + buyer1 + ": " + validX);
-                validX = await instance.validPurchasePublic.call(buyer2);
-                console.log("PreSale Valid Purchase for " + buyer2 + ": " + validX);
-                validX = await instance.validPurchasePublic.call(buyer3);
-                console.log("PreSale Valid Purchase for " + buyer3 + ": " + validX);
+            var owner = await presaleContract.getOwner.call();
+            console.log("PreSale Owner: " + owner);
+            var validX = await presaleContract.validPurchasePublic.call(owner1);
+            console.log("PreSale Valid Purchase for " + owner1 + ": " + validX);
+            validX = await presaleContract.validPurchasePublic.call(buyer1);
+            console.log("PreSale Valid Purchase for " + buyer1 + ": " + validX);
+            validX = await presaleContract.validPurchasePublic.call(buyer2);
+            console.log("PreSale Valid Purchase for " + buyer2 + ": " + validX);
+            validX = await presaleContract.validPurchasePublic.call(buyer3);
+            console.log("PreSale Valid Purchase for " + buyer3 + ": " + validX);
 
-                assert.equal(true, true, 'Get Token and Presale Variables Failed');
-                done();
-            } catch (error) {
-                console.log(error);
-                done(error);                
-            }
-        });
+            assert.equal(true, true, 'Get Token and Presale Variables Failed');
+        } catch (error) {
+            console.log(error);            
+        }
     });
 
     it('buys tokens', async function(){
         const weiAmount = 1 * 1000000000000000000;
         try {
-            var tokenAmount = await presaleContract.calcTokens.call(weiAmount);
-            
-            var tx = await presaleContract.buyTokens.call({ value: weiAmount, from: buyer1 }); //, from:accounts[0]
+            const tokenAmount = (await presaleContract.calcTokens.call(weiAmount)).toNumber();
+            console.log("tokenAmount = " + tokenAmount);
 
-            assert.isOk(tx, 'Buy Tokens Failed');
+            const buyerExpected = (await tokenContract.balanceOf(buyer2)).toNumber();
+            console.log("buyerInitial = " + buyerExpected);
+
+            const totalExpected = (await tokenContract.totalSupply()).toNumber();
+            console.log("totalInitial = " + totalExpected);
+
+            const walletExpected = (await web3.eth.getBalance(wallet)).toNumber();
+            console.log("walletInitial = " + walletExpected);
+
+            await presaleContract.buyTokens({ value: weiAmount, from: buyer2}).then((result) => { 
+                //console.log(result);
+                for (var i = 0; i < result.logs.length; i++) {
+                    var log = result.logs[i];
+                    //console.log(log);
+                    if (log.event == "TokensBought") {
+                        // We found the event!
+                        console.log("TokensBought: " + log.args.tokenAmount.toNumber() + " by " + log.args.buyer);
+                        break;
+                    }
+                    else if (log.event == "CapReached") {
+                        console.log("CapReached: " + log.args.tokensSold.toNumber() + " >= " + log.args.cap);
+                        break;
+                    }
+                  }
+             });
 
             // check that the buyer got the right amount of tokens
-            //const buyerBal = await tokenContract.balanceOf.call(buyer1);
-            //assert.equal(buyerBal.toNumber(), tokenAmount.toNumber(), "Buyer has wrong amount of tokens");
+            const buyerBal = (await tokenContract.balanceOf(buyer2)).toNumber();
+            // check that tokensSold, totalSupply and availableSupply have been updated
+            const totalSupply = (await tokenContract.totalSupply()).toNumber();
+            // check that wei was transferred to correct wallet address
+            const walletBal = (await web3.eth.getBalance(wallet)).toNumber();
 
-            // TODO: check that wei was transferred to correct wallet address
-            // TODO: check that tokensSold, totalSupply and availableSupply have been updated
+            console.log("buyerBal = " + buyerBal);
+            console.log("totalSupply = " + totalSupply);
+            console.log("walletBal = " + walletBal);
+
+            assert.equal(walletBal, walletExpected + weiAmount, 'Wallet balance did not increase correctly');  
+            assert.equal(totalSupply, totalExpected + tokenAmount, 'Total supply did not increase correctly'); 
+            assert.equal(buyerBal, buyerExpected + tokenAmount, 'Balance did not increase correctly');
+
         } catch (error) {
             console.log(error);              
         }
     });
-   
+
+    it('should mint tokens and send to recipient', async function() {
+        try {
+            const tokenAmount = 20 * 1000000000000000000;
+            const recipient = buyer2; //address(0xf17f52151EbEF6C7334FAD080c5704D77216b732);
+            const totalExpected = (await tokenContract.totalSupply()).toNumber() + tokenAmount;
+            const balanceExpected = (await tokenContract.balanceOf(recipient)).toNumber() + tokenAmount;
+            //console.log(totalExpected);
+            //console.log(balanceExpected);
+            await tokenContract.mint(recipient, tokenAmount); //50e18, or 50 full tokens
+            
+            const totalSupply = await tokenContract.totalSupply();
+            const balance = await tokenContract.balanceOf(recipient);
+            //console.log(totalSupply);
+            //console.log(balance);
+            assert.equal(balance.toNumber(), balanceExpected, 'Balance did not increase correctly');
+            assert.equal(totalSupply.toNumber(), totalExpected, 'Total supply did not increase correctly');          
+        } catch (error) {
+            console.log(error);
+        }
+    });
+   /*
     it('makes external purchase', async function(){
         var isPurchased = false;
         const centsAmount = 10000;
@@ -208,70 +244,47 @@ contract('PeblikPresale', function(accounts) {
             console.log(error);               
         }
     });
-
-    it('changes token price', function(done){
-        PeblikPresale.deployed().then(async function(instance) {
-            const _value = 0;
-            const _centsRaised = 0;
-            const _tokensSold = 0;
-
-            try {
-                const currentPrice = await instance.getDollarPriceExternal(_value,_centsRaised,_tokensSold,buyer1);
-                const expectedPrice = currentPrice + 1;
-                const validPurchase = await instance.changePrice(expectedPrice);
-                //console.log(validPurchase);
-                const newPrice = await instance.getDollarPriceExternal(_value,_centsRaised,_tokensSold,buyer1);
-                assert.equal(newPrice, expectedPrice, 'Price Changed Failed');
-                done();
-            } catch (error) {
-                console.log(error); 
-                done(error);               
-            }            
-       });
-    });
-
-
-    /*
-    it('should unpause correctly', function(done){
-        PeblikPresale.deployed().then(async function(instance) {
-
-            await instance.unpause();
-            const isPaused = await instance.paused();
-
-            try {
-                assert.equal(isPaused, false, 'Token was not unpaused correctly');                
-            } catch (error) {
-                console.log(error);                
-            }
-            done();
-       });
-    });
-
-    it('should mint tokens and send to recipient', function(done){
-        PeblikPresale.deployed().then(async function(instance) {
-            const tokenAmount = 50 * 1000000000000000000;
-            const recipient = accounts[1]; //address(0xf17f52151EbEF6C7334FAD080c5704D77216b732);
-            const totalExpected = (await instance.totalSupply.call()).toNumber() + tokenAmount;
-            const balanceExpected = (await web3.eth.getBalance(recipient)).toNumber() + tokenAmount;
-
-            await instance.mint(recipient, tokenAmount); //50e18, or 50 full tokens
-            
-            const totalSupply = await instance.totalSupply.call();
-            const balance = await web3.eth.getBalance(recipient);
-
-            try {
-                assert.equal(balance.toNumber(), balanceExpected, 'Total supply did not increase correctly');                
-            } catch (error) {
-                console.log(error);
-            }
-            try {
-                assert.equal(totalSupply.toNumber(), totalExpected, 'Total supply did not increase correctly');               
-            } catch (error) {
-                console.log(error);                
-            }
-           
-            done();
-       });
-    });
     */
+    it('changes token price', async function() {
+
+        const _value = 0;
+        const _centsRaised = 0;
+        const _tokensSold = 0;
+
+        try {
+            const currentPrice = await presaleContract.getDollarPriceExternal(_value,_centsRaised,_tokensSold,buyer1);
+            const expectedPrice = currentPrice + 5;
+            const validPurchase = await presaleContract.changePrice(expectedPrice);
+
+            const newPrice = await presaleContract.getDollarPriceExternal(_value,_centsRaised,_tokensSold,buyer1);
+            assert.equal(newPrice, expectedPrice, 'Price Changed Failed');
+        } catch (error) {
+            console.log(error);
+        }            
+    });
+
+    it('should pause correctly', async function() {
+
+        await presaleContract.pause();
+        const isPaused = await presaleContract.paused();
+
+        try {
+            assert.equal(isPaused, true, 'Presale was not paused correctly');                
+        } catch (error) {
+            console.log(error);           
+        }
+    });
+    
+    it('should unpause correctly', async function() {
+
+        await presaleContract.unpause();
+        const isPaused = await presaleContract.paused();
+
+        try {
+            assert.equal(isPaused, false, 'Presale was not unpaused correctly');                
+        } catch (error) {
+            console.log(error);                
+        }
+    });
+
 });

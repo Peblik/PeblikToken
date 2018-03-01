@@ -107,7 +107,7 @@ contract PeblikToken is TransferableToken, MintableToken {
 
         Mint(_to, _amount);
         Transfer(address(0), _to, _amount);
-        return true;
+        return true; 
     }
 
     /**

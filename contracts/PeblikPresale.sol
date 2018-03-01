@@ -55,7 +55,7 @@ contract PeblikPresale is BaseTokenSale {
         pricing = new FlatPricing(_centsPerToken);
     }
 
-    function getTime() public returns (uint256) {
+    function getTime() public view returns (uint256) {
         return earlyTime;
     }
 

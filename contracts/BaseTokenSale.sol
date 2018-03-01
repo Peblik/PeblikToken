@@ -156,23 +156,8 @@ contract BaseTokenSale is Pausable {
         require(validPurchase(msg.sender));
         
         uint256 weiAmount = msg.value;
-
-        // TODO: do we need to check wei limits at all, or just convert to USD?
-        // -- concerned about whether certain transactions will get stuck due to conversion rate discrepancies
- 
-        /*
-        if (weiAmount < minWei)
-        {
-            PurchaseError("Below minimum purchase amount.");
-            revert();
-        } else if (weiAmount > maxWei) {
-            PurchaseError("Above maximum purchase amount.");
-            revert();
-        }
-        */
-
-        uint256 ethAmount = weiAmount.div(1 ether); 
-        uint256 centsAmount = ethAmount.mul(centsPerEth);
+        uint256 centsAmount = weiAmount.mul(centsPerEth).div(1 ether);
+        //uint256 tokens = centsAmount.div(price).mul(10 ** token.decimals());
 
         if (!buyWithCents(msg.sender, centsAmount)) {
             revert();
@@ -210,12 +195,11 @@ contract BaseTokenSale is Pausable {
         uint256 totalAmount = _centsAmount;
         uint256 newBuyer = 0;
 
-     
         if (totalPurchase[_buyer] != 0) {
             totalAmount = totalAmount.add(_centsAmount);
             newBuyer = 1;
         }
-        
+
         if (_centsAmount < minCents) {
             // single purchase must meet the minimum
             PurchaseError("Below minimum purchase amount.", _buyer);
@@ -235,8 +219,8 @@ contract BaseTokenSale is Pausable {
         }
 
         // Convert to a token amount with decimals 
-        uint256 tokens = _centsAmount.div(price).mul(10 ** token.decimals());
-
+        uint256 tokens = _centsAmount.mul(10 ** token.decimals()).div(price);
+        
         // mint tokens as we go
         token.mint(_buyer, tokens);
 
@@ -394,36 +378,36 @@ contract BaseTokenSale is Pausable {
         uint256 price = getDollarPrice(0,0,0, msg.sender);
 
         uint256 centsAmount = weiAmount.mul(centsPerEth).div(1 ether);
-        uint256 tokens = centsAmount.div(price).mul(10 ** token.decimals());
+        uint256 tokens = centsAmount.mul(10 ** token.decimals()).div(price);
 
         return tokens;
     }
 
-    function getTokenOwner() public returns (address value) {
+    function getTokenOwner() public view returns (address value) {
         return token.owner();
     }
 
-    function getTokenController() public returns (address value) {
+    function getTokenController() public view returns (address value) {
         return token.controller();
     }
 
-    function getPaymentSource() public returns (address value) {
+    function getPaymentSource() public view returns (address value) {
         return paymentSource;
     }
 
-    function getTokenOnlyOwner() public returns (bool value) {
+    function getTokenOnlyOwner() public view returns (bool value) {
         return msg.sender == token.owner();
     }
 
-    function getTokenPaused() public returns (bool value) {
+    function getTokenPaused() public view returns (bool value) {
         return token.paused();
     }
 
-    function getTokenCanMint() public returns (bool value) {
+    function getTokenCanMint() public view returns (bool value) {
         return token.mintingFinished();
     }
 
-    function getOwner() public returns (address value) {
+    function getOwner() public view returns (address value) {
         return owner;
     }
 
