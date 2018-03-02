@@ -171,7 +171,7 @@ contract('PeblikPresale', function(accounts) {
 
 
             const totalExpected = (await tokenContract.totalSupply()).toNumber();
-            const buyerExpected = (await tokenContract.balanceOf(buyer1)).toNumber();
+            const buyerExpected = (await tokenContract.balanceOf(buyer2)).toNumber();
             const walletExpected = (await web3.eth.getBalance(wallet1)).toNumber();
 
             await presaleContract.buyTokens({ value: weiAmount, from: buyer2}).then((result) => { 

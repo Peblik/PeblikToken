@@ -74,28 +74,7 @@ contract('PeblikTokenSale', function(accounts) {
         }
     });
 
-    it('correctly shows isListed', async function() {
-        try {
-            isListed = await tokenSaleContract.isListed(buyer3);
-            assert.equal(isListed, true, 'isListed Failed');
-        } catch (error) {
-            console.log(error);                   
-        }
-    });
-
-    it('gets time', async function() {
-        var currentDate = Math.round((new Date().getTime()) / 1000);
-        try {
-            var timex = await tokenSaleContract.getTime.call();
-            var testit = timex.toNumber() <= currentDate;
-            //console.log(testit);
-            assert.equal(testit, true, 'Get Time Failed');
-        } catch (error) {
-            console.log(error);               
-        }
-    });
-
-    it('gets token and presale variables', async function() {
+    it('gets token and sale variables', async function() {
         try { 
             /*
             const weiAmount = 1 * 1000000000000000000;
@@ -149,10 +128,10 @@ contract('PeblikTokenSale', function(accounts) {
 
 
             const totalExpected = (await tokenContract.totalSupply()).toNumber();
-            const buyerExpected = (await tokenContract.balanceOf(buyer1)).toNumber();
+            const buyerExpected = (await tokenContract.balanceOf(buyer3)).toNumber();
             const walletExpected = (await web3.eth.getBalance(wallet1)).toNumber();
 
-            await tokenSaleContract.buyTokens({ value: weiAmount, from: buyer2}).then((result) => { 
+            await tokenSaleContract.buyTokens({ value: weiAmount, from: buyer3}).then((result) => { 
                 //console.log(result);
                 for (var i = 0; i < result.logs.length; i++) {
                     var log = result.logs[i];
@@ -163,7 +142,7 @@ contract('PeblikTokenSale', function(accounts) {
              });
 
             // check that the buyer got the right amount of tokens
-            const buyerBal = (await tokenContract.balanceOf(buyer2)).toNumber();
+            const buyerBal = (await tokenContract.balanceOf(buyer3)).toNumber();
             // check that tokensSold, totalSupply and availableSupply have been updated
             const totalSupply = (await tokenContract.totalSupply()).toNumber();
             // check that wei was transferred to correct wallet address
@@ -188,7 +167,7 @@ contract('PeblikTokenSale', function(accounts) {
         try {
             const source = await tokenSaleContract.paymentSource.call();
             assert.equal(source, pmtSrc, 'makes external purchase - Payment Source Failed');
-            var isListed = await tokenSaleContract.isEarlylisted(buyer2);
+            var isListed = await tokenSaleContract.isWhitelisted(buyer4);
             assert.equal(isListed, true, 'makes external purchase - Early listed Failed');
             //var TokensSold = await tokenSaleContract.getTokensSold();
             //var TokenCap = await tokenSaleContract.getTokenCap();
@@ -199,11 +178,11 @@ contract('PeblikTokenSale', function(accounts) {
             //var tokenValid = await tokenSaleContract.calcCentsToTokensValidate.call(buyer2, centsAmount, {from: pmtSrc});
             //assert.equal(tokenValid, true, 'makes external purchase - calcCentsToTokensValidate Failed');
 
-            var tokenAmount = (await tokenSaleContract.calcCentsToTokens.call(centsAmount, {from: buyer2})).toNumber();
+            var tokenAmount = (await tokenSaleContract.calcCentsToTokens.call(centsAmount, {from: buyer4})).toNumber();
             const totalExpected = (await tokenContract.totalSupply()).toNumber();
-            const buyerExpected = (await tokenContract.balanceOf(buyer2)).toNumber();
+            const buyerExpected = (await tokenContract.balanceOf(buyer4)).toNumber();
 
-            tokenSaleContract.externalPurchase(buyer2, centsAmount, {from: pmtSrc}).then((result) => { 
+            tokenSaleContract.externalPurchase(buyer4, centsAmount, {from: pmtSrc}).then((result) => { 
                 //console.log(result);
                 //console.log(result.logs.length);                
                 for (var i = 0; i < result.logs.length; i++) {
@@ -215,7 +194,7 @@ contract('PeblikTokenSale', function(accounts) {
             });
 
             // check that the buyer got the right amount of tokens
-            const buyerBal = (await tokenContract.balanceOf(buyer2)).toNumber();
+            const buyerBal = (await tokenContract.balanceOf(buyer4)).toNumber();
             // check that tokensSold, totalSupply and availableSupply have been updated
             const totalSupply = (await tokenContract.totalSupply()).toNumber();
 
@@ -356,11 +335,11 @@ contract('PeblikTokenSale', function(accounts) {
             assert.equal(isCapReached, false, 'buys tokens after Rate Change and Wallet - Cap Reached Failed');
 
             const totalExpected = (await tokenContract.totalSupply()).toNumber();
-            const buyerExpected = (await tokenContract.balanceOf(buyer2)).toNumber();
+            const buyerExpected = (await tokenContract.balanceOf(buyer4)).toNumber();
             const walletExpected = (await web3.eth.getBalance(wallet2)).toNumber();
             const walletOldExpected = (await web3.eth.getBalance(wallet1)).toNumber();
 
-            await tokenSaleContract.buyTokens({ value: weiAmount, from: buyer2}).then((result) => { 
+            await tokenSaleContract.buyTokens({ value: weiAmount, from: buyer4}).then((result) => { 
                 //console.log(result);
                 for (var i = 0; i < result.logs.length; i++) {
                     var log = result.logs[i];
@@ -373,7 +352,7 @@ contract('PeblikTokenSale', function(accounts) {
             await sleep(500);
 
             // check that the buyer got the right amount of tokens
-            const buyerBal = (await tokenContract.balanceOf(buyer2)).toNumber();
+            const buyerBal = (await tokenContract.balanceOf(buyer4)).toNumber();
             // check that tokensSold, totalSupply and availableSupply have been updated
             const totalSupply = (await tokenContract.totalSupply()).toNumber();
             // check that wei was transferred to correct wallet address
@@ -416,7 +395,7 @@ contract('PeblikTokenSale', function(accounts) {
 
     it('change End Time', async function() {
         try {
-            var endTime = await tokenSaleContract.getEndTime();
+            var endTime = await tokenSaleContract.getStartTime();
             const newTime = endTime.toNumber() + 1;
             tokenSaleContract.changeEndTime(newTime).then((result) => { 
                 for (var i = 0; i < result.logs.length; i++) {
@@ -434,13 +413,10 @@ contract('PeblikTokenSale', function(accounts) {
         }
     });
 
-    it('Early Test', async function() {
-        try {
-            var isEarly = await tokenSaleContract.isEarly();
-            assert.equal(isEarly, true, 'Early Test Failed');
-            await sleep(10000);
-            isEarly = await tokenSaleContract.isEarly();
-            assert.equal(isEarly, false, 'Early Test Failed');                
+    it('Sale Complete Test', async function() {
+        try {           
+            var isComplete = await tokenSaleContract.completeSale();
+            assert.equal(isComplete, true, 'Sale Complete Failed');              
         } catch (error) {
             console.log(error);                
         }
