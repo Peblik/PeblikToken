@@ -8,7 +8,6 @@ import '../node_modules/zeppelin-solidity/contracts/math/SafeMath.sol';
  * Manages a schedule of prices based on total tokens sold during a crowdsale.
  */
 contract SaleThresholdPricing is IPriceStrategy, Ownable {
-
     using SafeMath for uint256;
 
     uint256 public numLevels;
@@ -32,29 +31,38 @@ contract SaleThresholdPricing is IPriceStrategy, Ownable {
         return false;
     }
 
-    function changeLevels(uint256[] _thresholds, uint256[] _prices) public onlyOwner {
+    function changeLevels(uint256[] _thresholds, uint256[] _prices) public onlyOwner {  // onlyOwner
         require(_thresholds.length <= 8 && _prices.length <= 8); // keep the levels limited
         require(_thresholds[0] == 0); // must have a default level
         require(_thresholds.length == _prices.length); // arrays must have same number of entries
 
+        bool firstTime = true;
         uint256 prevAmount = 0;
         // Loops are costly, but  the length of the array is limited so we can live with it.
-        for (uint8 i = 0; i < _thresholds.length; i++) {
+        //PriceLevel[] memory alevel = new PriceLevel[](_thresholds.length);
+        //levels = alevel;
            
+        for (uint8 i = 0; i < _thresholds.length; i++) {          
             // Check that all thresholds are increasing
-            if (_thresholds[i] <= prevAmount) {
-                revert();
+            if (firstTime) {
+                prevAmount = _thresholds[i];
+                firstTime = false;
+            } else {
+                if (_thresholds[i] <= prevAmount) {
+                    revert();
+                }
+                // Prices must be non-zero
+                if (_prices[i] <= 0) {
+                    revert();
+                }
+                prevAmount = _thresholds[i];
             }
-            // Prices must be non-zero
-            if (_prices[i] <= 0) {
-                revert();
-            }
-
-            levels[i] = PriceLevel(_thresholds[i], _prices[i]);
+            //levels[i] = PriceLevel(_thresholds[i], _prices[i]);
+            levels.push(PriceLevel(_thresholds[i], _prices[i]));
         }
-        numLevels = levels.length;
+        //numLevels = levels.length;
 
-        PriceLevelsChanged(numLevels);
+        //PriceLevelsChanged(numLevels);
     }
 
     function getPriceLevels() public view returns (PriceLevel[] _levels) {

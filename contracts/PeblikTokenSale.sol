@@ -104,5 +104,4 @@ contract PeblikTokenSale is BaseTokenSale {
         bountyProgramWallet = _newWallet;
         BountyWalletChanged(_newWallet);
     }
-
 }
