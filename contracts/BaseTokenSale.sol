@@ -369,7 +369,6 @@ contract BaseTokenSale is Pausable {
 
 
     /** Testing functions */
-
     function getDollarPriceExternal(uint256 _value, uint256 _centsRaised, uint256 _tokensSold, address _buyer) public view returns (uint256 price) {
         return pricing.getCurrentPrice(_value, _centsRaised, _tokensSold, _buyer);
     }
