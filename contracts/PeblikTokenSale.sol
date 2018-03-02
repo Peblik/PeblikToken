@@ -9,7 +9,7 @@ import "./PeblikToken.sol";
 import "./BaseTokenSale.sol";
 
  /**
- * Manages the public crowdsale of Peblik Tokens.. In addition to all the rules defined in the BaseTokenSale superclass:
+ * Manages the public crowdsale of Peblik Tokens. In addition to all the rules defined in the BaseTokenSale superclass:
  * - defines additional wallets for transferring fund allocation after the sale ends
  * - supports a multiple-level pricing scheme where price levels are based on token sale thresholds
  */
@@ -28,8 +28,6 @@ contract PeblikTokenSale is BaseTokenSale {
     uint256 public advisorPoolAmount = 120000000e18;
     uint256 public bountyProgramAmount = 120000000e18;
 
-    //event ResourceReserveWalletChanged(address newWallet);
-    //event PublicReserveWalletChanged(address newWallet);
     event EmployeeWalletChanged(address newWallet); 
     event AdvisorWalletChanged(address newWallet); 
     event BountyWalletChanged(address newWallet); 
@@ -47,7 +45,7 @@ contract PeblikTokenSale is BaseTokenSale {
      * @param _cap The maximum number of tokens that can be sold duringg the presale.
      * @param _wallet The address of the ethereum wallet for collecting funds
      * @param _min The minimum amount required per purchase, in terms of US cents
-     * @param _min The maximum amount that a buyer can purchase during the entire presale, in terms of US cents
+     * @param _max The maximum amount that a buyer can purchase during the entire presale, in terms of US cents
      * @param _thresholds An array of tokens-sold amounts that trigger new price levels
      * @param _prices An array of price-per-token values corresponding to the sales thresholds
      */
@@ -104,5 +102,4 @@ contract PeblikTokenSale is BaseTokenSale {
         bountyProgramWallet = _newWallet;
         BountyWalletChanged(_newWallet);
     }
-
 }
