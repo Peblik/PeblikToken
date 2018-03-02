@@ -161,11 +161,7 @@ contract('PeblikPresale', function(accounts) {
         const weiAmount = 1 * 1000000000000000000;
         try {
             const tokenAmount = (await presaleContract.calcTokens.call(weiAmount)).toNumber();
-            //console.log("tokenAmount = " + tokenAmount);
 
-            //var TokensSold = await presaleContract.getTokensSold();
-            //var TokenCap = await presaleContract.getTokenCap();
-            //console.log("Tokens Sold: " + TokensSold + " Token Cap " + TokenCap);
             var isCapReached = await presaleContract.getcapReached();
             assert.equal(isCapReached, false, 'buys tokens - Cap Reached Failed');
 
@@ -175,13 +171,10 @@ contract('PeblikPresale', function(accounts) {
             const walletExpected = (await web3.eth.getBalance(wallet1)).toNumber();
 
             await presaleContract.buyTokens({ value: weiAmount, from: buyer2}).then((result) => { 
-                //console.log(result);
                 for (var i = 0; i < result.logs.length; i++) {
                     var log = result.logs[i];
-                    //console.log(log);
                     RecordLog(log);
                 }
-                //utils.assertEvent(presaleContract, { event: "Mint", logIndex: 0, args: { to: buyer1, amount: 1000000000000000000 }})
              });
 
             // check that the buyer got the right amount of tokens
@@ -212,29 +205,21 @@ contract('PeblikPresale', function(accounts) {
             assert.equal(source, pmtSrc, 'makes external purchase - Payment Source Failed');
             var isListed = await presaleContract.isEarlylisted(buyer2);
             assert.equal(isListed, true, 'makes external purchase - Early listed Failed');
-            //var TokensSold = await presaleContract.getTokensSold();
-            //var TokenCap = await presaleContract.getTokenCap();
-            //console.log("Tokens Sold: " + TokensSold + " Token Cap " + TokenCap);
 
             var isCapReached = await presaleContract.getcapReached();
             assert.equal(isCapReached, false, 'makes external purchase - Cap Reached Failed');
-            //var tokenValid = await presaleContract.calcCentsToTokensValidate.call(buyer2, centsAmount, {from: pmtSrc});
-            //assert.equal(tokenValid, true, 'makes external purchase - calcCentsToTokensValidate Failed');
 
             var tokenAmount = (await presaleContract.calcCentsToTokens.call(centsAmount, {from: buyer2})).toNumber();
             const totalExpected = (await tokenContract.totalSupply()).toNumber();
             const buyerExpected = (await tokenContract.balanceOf(buyer2)).toNumber();
 
-            presaleContract.externalPurchase(buyer2, centsAmount, {from: pmtSrc}).then((result) => { 
-                //console.log(result);
-                //console.log(result.logs.length);                
+            presaleContract.externalPurchase(buyer2, centsAmount, {from: pmtSrc}).then((result) => {              
                 for (var i = 0; i < result.logs.length; i++) {
                     //console.log(i);
                     var log = result.logs[i];
                     RecordLog(log);
                 }
-                //utils.assertEvent(presaleContract, { event: "Mint", logIndex: 0, args: { to: buyer2, amount: 1000000000000000000 }});
-            });
+             });
 
             // check that the buyer got the right amount of tokens
             const buyerBal = (await tokenContract.balanceOf(buyer2)).toNumber();
@@ -330,18 +315,16 @@ contract('PeblikPresale', function(accounts) {
    it('change Conversion Rate', async function() {
         try {
             const newRate = new web3.BigNumber(95000);
-            var conversionRate = await presaleContract.getConversionRate();
+            var conversionRate = await presaleContract.centsPerEth.call();
             
             presaleContract.changeConversionRate(newRate).then((result) => { 
                 for (var i = 0; i < result.logs.length; i++) {
                     var log = result.logs[i];
-                    //console.log(log);
                     RecordLog(log);
                 }
-                //utils.assertEvent(presaleContract, { event: "Mint", logIndex: 0, args: { to: buyer2, amount: 1000000000000000000 }});
             });
-            conversionRate = await presaleContract.getConversionRate();
-            assert.equal(newRate.toNumber(), conversionRate.toNumber(), 'change Conversion Rate Failed');                
+            const changedRate = await presaleContract.centsPerEth.call();
+            assert.equal(changedRate.toNumber(), newRate.toNumber(), 'change Conversion Rate Failed');                
         } catch (error) {
             console.log(error);                
         }
@@ -353,10 +336,8 @@ contract('PeblikPresale', function(accounts) {
             presaleContract.changeWallet(wallet2).then((result) => { 
                 for (var i = 0; i < result.logs.length; i++) {
                     var log = result.logs[i];
-                    //console.log(log);
                     RecordLog(log);
                 }
-                //utils.assertEvent(presaleContract, { event: "Mint", logIndex: 0, args: { to: buyer2, amount: 1000000000000000000 }});
             });
             await sleep(500);
             assert.equal(true, true, 'change Wallet Failed');                
@@ -383,14 +364,11 @@ contract('PeblikPresale', function(accounts) {
             const walletOldExpected = (await web3.eth.getBalance(wallet1)).toNumber();
 
             await presaleContract.buyTokens({ value: weiAmount, from: buyer2}).then((result) => { 
-                //console.log(result);
                 for (var i = 0; i < result.logs.length; i++) {
                     var log = result.logs[i];
-                    //console.log(log);
                     RecordLog(log);
                 }
-                //utils.assertEvent(presaleContract, { event: "Mint", logIndex: 0, args: { to: buyer1, amount: 1000000000000000000 }})
-            });
+             });
 
             await sleep(500);
 
@@ -423,11 +401,9 @@ contract('PeblikPresale', function(accounts) {
             presaleContract.changeStartTime(newTime).then((result) => { 
                 for (var i = 0; i < result.logs.length; i++) {
                     var log = result.logs[i];
-                    //console.log(log);
                     RecordLog(log);
                 }
-                //utils.assertEvent(presaleContract, { event: "Mint", logIndex: 0, args: { to: buyer2, amount: 1000000000000000000 }});
-            });
+             });
             await sleep(500);
             startTime = await presaleContract.getStartTime();
             assert.equal(newTime, startTime.toNumber(), 'change Start Time Failed');                
@@ -443,10 +419,8 @@ contract('PeblikPresale', function(accounts) {
             presaleContract.changeEndTime(newTime).then((result) => { 
                 for (var i = 0; i < result.logs.length; i++) {
                     var log = result.logs[i];
-                    //console.log(log);
                     RecordLog(log);
                 }
-                //utils.assertEvent(presaleContract, { event: "Mint", logIndex: 0, args: { to: buyer2, amount: 1000000000000000000 }});
             });
             await sleep(500);
             endTime = await presaleContract.getEndTime();
@@ -459,10 +433,10 @@ contract('PeblikPresale', function(accounts) {
     it('Early Test', async function() {
         try {
             var isEarly = await presaleContract.isEarly();
-            assert.equal(isEarly, true, 'Early Test Failed');
+            assert.equal(isEarly, true, 'Should be in earlybird phase');
             await sleep(10000);
             isEarly = await presaleContract.isEarly();
-            assert.equal(isEarly, false, 'Early Test Failed');                
+            assert.equal(isEarly, false, 'Early bird phase should be over now');                
         } catch (error) {
             console.log(error);                
         }

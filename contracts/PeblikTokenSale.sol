@@ -54,8 +54,8 @@ contract PeblikTokenSale is BaseTokenSale {
     }
 
     /**
-    * @dev Override to mint tokens for post-sale allocations.
-    */
+     * @dev Override to mint tokens for post-sale allocations.
+     */
     function completeSale () public onlyOwner {
         require(capReached || now > endTime); 
         saleComplete = true;
@@ -78,7 +78,7 @@ contract PeblikTokenSale is BaseTokenSale {
         EmployeeWalletChanged(_newWallet);
     }
 
-        /**
+    /**
     * @dev Change the wallet used for the advisor pool. (This should be directed to a token vesting contract).
     * @param _newWallet The address of the new wallet to use.
     */
