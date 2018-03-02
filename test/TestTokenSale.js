@@ -52,26 +52,6 @@ contract('PeblikTokenSale', function(accounts) {
         }
     });
 
-    it('adds to early list', async function() {
-        try {
-            var isListed = await tokenSaleContract.isEarlylisted(buyer1);
-            if (!isListed) {
-                await tokenSaleContract.addToEarlylist(buyer1);
-                isListed = await tokenSaleContract.isEarlylisted(buyer1);
-            }
-            assert.equal(isListed, true, 'Early listed Failed');
-
-            isListed = await tokenSaleContract.isEarlylisted(buyer2);
-            if (!isListed) {
-                await tokenSaleContract.addToEarlylist(buyer2);
-                isListed = await tokenSaleContract.isEarlylisted(buyer2);
-            }
-            assert.equal(isListed, true, 'Early listed Failed');
-        } catch (error) {
-            console.log(error);                  
-        }    
-    });
-
     it('adds to whitelist', async function() {
         try {
             var isListed = await tokenSaleContract.isWhitelisted(buyer3);
@@ -96,8 +76,6 @@ contract('PeblikTokenSale', function(accounts) {
 
     it('correctly shows isListed', async function() {
         try {
-            var isListed = await tokenSaleContract.isListed(buyer1);
-            assert.equal(isListed, true, 'isListed Failed');
             isListed = await tokenSaleContract.isListed(buyer3);
             assert.equal(isListed, true, 'isListed Failed');
         } catch (error) {
