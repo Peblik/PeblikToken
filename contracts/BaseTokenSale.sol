@@ -190,7 +190,6 @@ contract BaseTokenSale is Pausable {
     }
 
     function buyWithCents(address _buyer, uint256 _centsAmount) internal returns (bool success) {
-
         // check purchase history
         uint256 totalAmount = _centsAmount;
         uint256 newBuyer = 0;
@@ -218,8 +217,9 @@ contract BaseTokenSale is Pausable {
             return false;
         }
 
-        // Convert to a token amount with decimals 
-        uint256 tokens = _centsAmount.mul(10 ** token.decimals()).div(price);
+        // Convert to a token amount with decimals.
+        // Note that this assumes that the token has 18 decimal places (as ours does).
+        uint256 tokens = _centsAmount.mul(1 ether).div(price);
         
         // mint tokens as we go
         token.mint(_buyer, tokens);
@@ -343,7 +343,7 @@ contract BaseTokenSale is Pausable {
         require(!saleComplete);
         require(_buyer != 0x0 && whitelist[_buyer]);
         whitelist[_buyer] = false; 
-        whitelistCount--;
+        whitelistCount = whitelistCount.sub(1);
         BuyerRemoved(_buyer, whitelistCount);
     }
 
@@ -367,8 +367,9 @@ contract BaseTokenSale is Pausable {
 		return strandedToken.transfer(_to, strandedToken.balanceOf(this));
 	}
 
-
-    /** Testing functions */
+    // -----------------------------------------------------------
+    /** Testing functions, for test script and debugging use. **/
+    /** These will be removed from the production contracts before deploying to mainnet. */
 
     function getDollarPriceExternal(uint256 _value, uint256 _centsRaised, uint256 _tokensSold, address _buyer) public view returns (uint256 price) {
         return pricing.getCurrentPrice(_value, _centsRaised, _tokensSold, _buyer);
@@ -376,11 +377,7 @@ contract BaseTokenSale is Pausable {
 
     function calcTokens(uint256 weiAmount) public view returns (uint256 value) {
         uint256 price = getDollarPrice(weiAmount, 0, 0, msg.sender);
-
-        uint256 centsAmount = weiAmount.mul(centsPerEth).div(1 ether);
-        uint256 tokens = centsAmount.mul(10 ** token.decimals()).div(price);
-
-        return tokens;
+        return weiAmount.mul(centsPerEth).div(price);
     }
 
     function calcCentsToTokens(uint256 centsAmount) public view returns (uint256 value) {
