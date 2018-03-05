@@ -29,6 +29,11 @@ contract FlatPricing is IPriceStrategy, Ownable {
         return true;
     }
 
+    function changeLevels(uint256[] _thresholds, uint256[] _prices) public { 
+        //does not do anything for flat pricing;
+        return;
+    }
+
     /**
     * Caclulates the effective price for a sale transaction.
     *

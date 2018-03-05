@@ -102,6 +102,7 @@ contract PeblikToken is TransferableToken, MintableToken {
         if (totalSupply_.add(_amount) > availableSupply) {
             return false;
         }
+
         totalSupply_ = totalSupply_.add(_amount);
         balances[_to] = balances[_to].add(_amount);
 

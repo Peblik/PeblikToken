@@ -340,32 +340,11 @@ contract('PeblikPresale', function(accounts) {
         }
     });
 
-    it('change Price', async function() {
-        try {
-            const centsPerToken = 16;
-            //changePrice(uint256 _newPrice) public onlyOwner returns (bool success)          
-            await presaleContract.changeWallet(changePrice).then((result) => { 
-                for (var i = 0; i < result.logs.length; i++) {
-                    var log = result.logs[i];
-                    RecordLog(log);
-                }
-            });
-            await sleep(500);
-            await presaleContract.getDollarPriceExternal(changePrice);
-            //getDollarPriceExternal(uint256 _value, uint256 _centsRaised, uint256 _tokensSold, address _buyer) 
-            assert.equal(centsPerToken, centsPerToken, 'change Price Failed');                
-        } catch (error) {
-            console.log(error);                
-        }
-    });
-
-
-
     it('buys tokens after Rate, Price and Wallet Change', async function(){
         const weiAmount = 1 * 1000000000000000000;
         try {
             const tokenAmount = (await presaleContract.calcTokens.call(weiAmount)).toNumber();
-            console.log("tokenAmount = " + tokenAmount);
+            //console.log("tokenAmount = " + tokenAmount);
 
             var isCapReached = await presaleContract.getcapReached();
             assert.equal(isCapReached, false, 'buys tokens after Rate, Price and Wallet Change - Cap Reached Failed');

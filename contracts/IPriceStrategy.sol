@@ -9,6 +9,8 @@ interface IPriceStrategy {
 
   function changePrice(uint256 _newPrice) public returns (bool success);
 
+  function changeLevels(uint256[] _thresholds, uint256[] _prices) public;
+
   /**
    * @dev Caclulates the effective price for a sale transaction.
    *

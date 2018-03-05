@@ -31,6 +31,7 @@ contract PeblikTokenSale is BaseTokenSale {
     event EmployeeWalletChanged(address newWallet); 
     event AdvisorWalletChanged(address newWallet); 
     event BountyWalletChanged(address newWallet); 
+    event SaleComplete(uint256 totalSupply); 
 
     //event PricesChanged(uint256 level1, uint256 level2, uint256 level3, uint256 level4);
 
@@ -53,6 +54,11 @@ contract PeblikTokenSale is BaseTokenSale {
         pricing = new SaleThresholdPricing(_thresholds, _prices);
     }
 
+    function changeLevels(uint256[] _thresholds, uint256[] _prices) public { 
+        pricing.changeLevels(_thresholds, _prices);
+    }
+
+
     /**
      * @dev Override to mint tokens for post-sale allocations.
      */
@@ -64,6 +70,8 @@ contract PeblikTokenSale is BaseTokenSale {
         token.mint(employeePoolWallet, employeePoolAmount);
         token.mint(advisorPoolWallet, advisorPoolAmount);
         token.mint(bountyProgramWallet, bountyProgramAmount);
+        
+        SaleComplete(token.totalSupply());
     }
 
     /**

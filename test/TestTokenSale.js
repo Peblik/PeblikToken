@@ -268,12 +268,37 @@ contract('PeblikTokenSale', function(accounts) {
         }
     });
 
+    it('change Levels price', async function() {
+
+        const _value = 0;
+        const _centsRaised = 0;
+        const _tokensSold = 110001;
+        const thresholds = [0,51000,110000,160000];
+        const prices = [26,36,46,56];
+        const expectedPrice = 46;
+  
+        try {
+            const validPurchase = await tokenSaleContract.changeLevels(thresholds,prices).then((result) => { 
+                for (var i = 0; i < result.logs.length; i++) {
+                    var log = result.logs[i];
+                    //console.log(log);
+                    RecordLog(log);
+                }
+                //utils.assertEvent(tokenSaleContract, { event: "Mint", logIndex: 0, args: { to: buyer2, amount: 1000000000000000000 }});
+            });
+            const newPrice = await tokenSaleContract.getDollarPriceExternal(_value,_centsRaised,_tokensSold,buyer4);
+            assert.equal(newPrice.toNumber(), expectedPrice, 'change Levels price Failed');
+        } catch (error) {
+            console.log(error);
+        }            
+    });
+
    it('change Conversion Rate', async function() {
         try {
             const newRate = new web3.BigNumber(95000);
             var conversionRate = await tokenSaleContract.getConversionRate();
             
-            tokenSaleContract.changeConversionRate(newRate).then((result) => { 
+            await tokenSaleContract.changeConversionRate(newRate).then((result) => { 
                 for (var i = 0; i < result.logs.length; i++) {
                     var log = result.logs[i];
                     //console.log(log);
@@ -291,7 +316,7 @@ contract('PeblikTokenSale', function(accounts) {
     it('change Wallet', async function() {
         try {
                       
-            tokenSaleContract.changeWallet(wallet2).then((result) => { 
+            await tokenSaleContract.changeWallet(wallet2).then((result) => { 
                 for (var i = 0; i < result.logs.length; i++) {
                     var log = result.logs[i];
                     //console.log(log);
@@ -299,7 +324,7 @@ contract('PeblikTokenSale', function(accounts) {
                 }
                 //utils.assertEvent(tokenSaleContract, { event: "Mint", logIndex: 0, args: { to: buyer2, amount: 1000000000000000000 }});
             });
-            await sleep(500);
+
             assert.equal(true, true, 'change Wallet Failed');                
         } catch (error) {
             console.log(error);                
@@ -310,7 +335,7 @@ contract('PeblikTokenSale', function(accounts) {
         const weiAmount = 1 * 1000000000000000000;
         try {
             const tokenAmount = (await tokenSaleContract.calcTokens.call(weiAmount)).toNumber();
-            console.log("tokenAmount = " + tokenAmount);
+            //console.log("tokenAmount = " + tokenAmount);
 
             //var TokensSold = await tokenSaleContract.getTokensSold();
             //var TokenCap = await tokenSaleContract.getTokenCap();
@@ -396,23 +421,121 @@ contract('PeblikTokenSale', function(accounts) {
         }
     });
 
-    /*
-        changeEmployeePoolWallet (address _newWallet) public onlyOwner
-        changeAdvisorPoolWallet (address _newWallet) public onlyOwner
-        changeBountyProgramWallet (address _newWallet) public onlyOwner
+   it('change Employee Pool Wallet', async function() {
+        try {
+            await tokenSaleContract.changeEmployeePoolWallet(owner1).then((result) => { 
+                for (var i = 0; i < result.logs.length; i++) {
+                    var log = result.logs[i];
+                    //console.log(log);
+                    RecordLog(log);
+                }
+                //utils.assertEvent(tokenSaleContract, { event: "Mint", logIndex: 0, args: { to: buyer2, amount: 1000000000000000000 }});
+            });
+            var newOwner = await tokenSaleContract.employeePoolWallet();
+            assert.equal(newOwner, owner1, 'change Employee Pool Wallet Failed');                
+        } catch (error) {
+            console.log(error);                
+        }
+    });
 
-    */
+    it('change Advisor Pool Wallet', async function() {
+        try {
+            await tokenSaleContract.changeAdvisorPoolWallet(owner2).then((result) => { 
+                for (var i = 0; i < result.logs.length; i++) {
+                    var log = result.logs[i];
+                    //console.log(log);
+                    RecordLog(log);
+                }
+                //utils.assertEvent(tokenSaleContract, { event: "Mint", logIndex: 0, args: { to: buyer2, amount: 1000000000000000000 }});
+            });
+            var newOwner = await tokenSaleContract.advisorPoolWallet();
+            assert.equal(newOwner, owner2, 'change Advisor Pool Wallet Failed');                
+        } catch (error) {
+            console.log(error);                
+        }
+    });
 
- /*
-    it('Sale Complete Test', async function() {
-        try {           
-            var isComplete = await tokenSaleContract.completeSale();
-            assert.equal(isComplete, true, 'Sale Complete Failed');              
+    it('change Bounty Program Wallet', async function() {
+        try {
+            await tokenSaleContract.changeBountyProgramWallet(wallet1).then((result) => { 
+                for (var i = 0; i < result.logs.length; i++) {
+                    var log = result.logs[i];
+                    //console.log(log);
+                    RecordLog(log);
+                }
+                //utils.assertEvent(tokenSaleContract, { event: "Mint", logIndex: 0, args: { to: buyer2, amount: 1000000000000000000 }});
+            });
+            var newOwner = await tokenSaleContract.bountyProgramWallet();
+            assert.equal(newOwner, wallet1, 'change Bounty Program Wallet Failed');                
+        } catch (error) {
+            console.log(error);                
+        }
+    });
+
+    it('Sale Complete', async function() {
+        try {
+            
+            var dt = new Date();
+            dt.setDate(dt.getDate());
+            const newTime = (Math.round((dt.getTime())/1000)) + 2; // now
+            await tokenSaleContract.changeEndTime(newTime).then((result) => { 
+                for (var i = 0; i < result.logs.length; i++) {
+                    var log = result.logs[i];
+                    //console.log(log);
+                    RecordLog(log);
+                }
+                //utils.assertEvent(tokenSaleContract, { event: "Mint", logIndex: 0, args: { to: buyer2, amount: 1000000000000000000 }});
+            });
+
+            await sleep(10000);
+
+            const baseAmount = 1 * 1000000000000000000;
+
+            const employeePoolToken = 360000000 * baseAmount;
+            const advisorPoolToken = 120000000 * baseAmount;
+            const bountyProgramToken = 120000000 * baseAmount;
+
+            const totalExpected = (await tokenContract.totalSupply()).toNumber();
+            const owner1BalExpected = (await tokenContract.balanceOf(owner1)).toNumber();
+            const owner2BalExpected = (await tokenContract.balanceOf(owner2)).toNumber();
+            const wallet1BalExpected = (await tokenContract.balanceOf(wallet1)).toNumber();
+
+            //console.log("totalExpected " + totalExpected);
+            //console.log("owner1BalExpected " + owner1BalExpected);
+            //console.log("owner2BalExpected " + owner2BalExpected);
+            //console.log("wallet1BalExpected " + wallet1BalExpected);
+
+            await tokenSaleContract.completeSale().then((result) => { 
+                for (var i = 0; i < result.logs.length; i++) {
+                    var log = result.logs[i];
+                    //console.log(log);
+                    RecordLog(log);
+                }
+                //utils.assertEvent(tokenSaleContract, { event: "Mint", logIndex: 0, args: { to: buyer2, amount: 1000000000000000000 }});
+            });
+            
+            // check that tokensSold, totalSupply and availableSupply have been updated
+            const totalSupply = (await tokenContract.totalSupply()).toNumber();
+            // check that the Accounts got the right amount of tokens
+            const owner1Bal = (await tokenContract.balanceOf(owner1)).toNumber();
+            const owner2Bal = (await tokenContract.balanceOf(owner2)).toNumber();
+            const wallet1Bal = (await tokenContract.balanceOf(wallet1)).toNumber();
+
+            //console.log("totalSupply " + totalSupply);
+            //console.log("owner1Bal " + owner1Bal);
+            //console.log("owner2Bal " + owner2Bal);
+            //console.log("wallet1Bal " + wallet1Bal);
+
+            //console.log("totalExpected + employeePoolToken + advisorPoolToken + bountyProgramToken " + (totalExpected + employeePoolToken + advisorPoolToken + bountyProgramToken));
+            assert.equal(totalSupply, (totalExpected + employeePoolToken + advisorPoolToken + bountyProgramToken), 'Sale Complete - Total supply did not increase correctly'); 
+            assert.equal(owner1Bal, owner1BalExpected + employeePoolToken, 'Sale Complete - Balance did not increase correctly');
+            assert.equal(owner2Bal, owner2BalExpected + advisorPoolToken, 'Sale Complete - Balance did not increase correctly');
+            assert.equal(wallet1Bal, wallet1BalExpected + bountyProgramToken, 'Sale Complete - Balance did not increase correctly');            
         } catch (error) {
             console.log(error);                
         }
     })
-*/
+
     function sleep(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
@@ -451,15 +574,21 @@ contract('PeblikTokenSale', function(accounts) {
                 console.log("Event:" + " " + log.event +": " + log.args.newRate.toNumber());
                 break;
             }
+            case "EmployeeWalletChanged":
+            case "AdvisorWalletChanged":
+            case "BountyWalletChanged":
             case "WalletChanged": {
                 console.log("Event:" + " " + log.event +": " + log.args.newWallet);
                 break;
-            }        
+            }       
             case "PaymentSourceChanged": {
                 console.log("Event:" + " " + log.event +": oldSource " + log.args.oldSource + " newSource " + log.args.newSource);
                 break;
             }        
-                
+            case "SaleComplete": {
+                console.log("Event:" + " " + log.event +": totalSupply " + log.args.totalSupply.toNumber());
+                break;
+            }        
             default: {
                 //console.log(log.event);
                 console.log(log);
