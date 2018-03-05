@@ -26,13 +26,21 @@ contract('PeblikTokenSale', function(accounts) {
             tokenContract = tokenInstance;
 
             const addr = tokenContract.address;
-            //console.log("token contract address = " + addr);   
+            console.log("token contract address = " + addr);   
         });
     });
 
     it('changes payment source', async function() {
         try {
-            await tokenSaleContract.changePaymentSource(pmtSrc, { from: owner1 });
+            await tokenSaleContract.changePaymentSource(pmtSrc, { from: owner1 }).then((result) => { 
+                //console.log(result);
+                for (var i = 0; i < result.logs.length; i++) {
+                    var log = result.logs[i];
+                    //console.log(log);
+                    RecordLog(log);
+                }
+                //utils.assertEvent(tokenSaleContract, { event: "Mint", logIndex: 0, args: { to: buyer1, amount: 1000000000000000000 }})
+             });
             const source = await tokenSaleContract.paymentSource.call();
             assert.equal(source, pmtSrc, 'Change Payment Source Failed');
         } catch (error) {
@@ -160,7 +168,7 @@ contract('PeblikTokenSale', function(accounts) {
             console.log(error);              
         }
     });
- 
+
     it('makes external purchase', async function() {
         var isPurchased = false;
         const centsAmount = 10000;
@@ -182,7 +190,7 @@ contract('PeblikTokenSale', function(accounts) {
             const totalExpected = (await tokenContract.totalSupply()).toNumber();
             const buyerExpected = (await tokenContract.balanceOf(buyer4)).toNumber();
 
-            tokenSaleContract.externalPurchase(buyer4, centsAmount, {from: pmtSrc}).then((result) => { 
+            await tokenSaleContract.externalPurchase(buyer4, centsAmount, {from: pmtSrc}).then((result) => { 
                 //console.log(result);
                 //console.log(result.logs.length);                
                 for (var i = 0; i < result.logs.length; i++) {
@@ -240,24 +248,6 @@ contract('PeblikTokenSale', function(accounts) {
         }
     })
 
-    it('changes token price', async function() {
-
-        const _value = 0;
-        const _centsRaised = 0;
-        const _tokensSold = 0;
-
-        try {
-            const currentPrice = await tokenSaleContract.getDollarPriceExternal(_value,_centsRaised,_tokensSold,buyer1);
-            const expectedPrice = currentPrice + 5;
-            const validPurchase = await tokenSaleContract.changePrice(expectedPrice);
-
-            const newPrice = await tokenSaleContract.getDollarPriceExternal(_value,_centsRaised,_tokensSold,buyer1);
-            assert.equal(newPrice, expectedPrice, 'Price Changed Failed');
-        } catch (error) {
-            console.log(error);
-        }            
-    });
-
     it('should pause correctly', async function() {
         try {
             await tokenSaleContract.pause();
@@ -277,12 +267,6 @@ contract('PeblikTokenSale', function(accounts) {
             console.log(error);                
         }
     });
-
-    /*
-
-    claimStrandedTokens(address _token, address _to) public onlyOwner returns (bool)
-
-    */
 
    it('change Conversion Rate', async function() {
         try {
@@ -349,8 +333,6 @@ contract('PeblikTokenSale', function(accounts) {
                 //utils.assertEvent(tokenSaleContract, { event: "Mint", logIndex: 0, args: { to: buyer1, amount: 1000000000000000000 }})
             });
 
-            await sleep(500);
-
             // check that the buyer got the right amount of tokens
             const buyerBal = (await tokenContract.balanceOf(buyer4)).toNumber();
             // check that tokensSold, totalSupply and availableSupply have been updated
@@ -375,9 +357,10 @@ contract('PeblikTokenSale', function(accounts) {
 
     it('change Start Time', async function() {
         try {
-            var startTime = await tokenSaleContract.getStartTime();
-            const newTime = startTime.toNumber() + 1;
-            tokenSaleContract.changeStartTime(newTime).then((result) => { 
+            var dt = new Date();
+            dt.setDate(dt.getDate());
+            const newTime = (Math.round((dt.getTime())/1000)) + 1; // now
+            await tokenSaleContract.changeStartTime(newTime).then((result) => { 
                 for (var i = 0; i < result.logs.length; i++) {
                     var log = result.logs[i];
                     //console.log(log);
@@ -385,7 +368,7 @@ contract('PeblikTokenSale', function(accounts) {
                 }
                 //utils.assertEvent(tokenSaleContract, { event: "Mint", logIndex: 0, args: { to: buyer2, amount: 1000000000000000000 }});
             });
-            await sleep(500);
+
             startTime = await tokenSaleContract.getStartTime();
             assert.equal(newTime, startTime.toNumber(), 'change Start Time Failed');                
         } catch (error) {
@@ -395,9 +378,10 @@ contract('PeblikTokenSale', function(accounts) {
 
     it('change End Time', async function() {
         try {
-            var endTime = await tokenSaleContract.getStartTime();
-            const newTime = endTime.toNumber() + 1;
-            tokenSaleContract.changeEndTime(newTime).then((result) => { 
+            var dt = new Date();
+            dt.setDate(dt.getDate());
+            const newTime = (Math.round((dt.getTime())/1000)) + 5400; // 90 minutes after start
+            await tokenSaleContract.changeEndTime(newTime).then((result) => { 
                 for (var i = 0; i < result.logs.length; i++) {
                     var log = result.logs[i];
                     //console.log(log);
@@ -405,7 +389,6 @@ contract('PeblikTokenSale', function(accounts) {
                 }
                 //utils.assertEvent(tokenSaleContract, { event: "Mint", logIndex: 0, args: { to: buyer2, amount: 1000000000000000000 }});
             });
-            await sleep(500);
             endTime = await tokenSaleContract.getEndTime();
             assert.equal(newTime, endTime.toNumber(), 'change End Time Failed');                
         } catch (error) {
@@ -413,6 +396,14 @@ contract('PeblikTokenSale', function(accounts) {
         }
     });
 
+    /*
+        changeEmployeePoolWallet (address _newWallet) public onlyOwner
+        changeAdvisorPoolWallet (address _newWallet) public onlyOwner
+        changeBountyProgramWallet (address _newWallet) public onlyOwner
+
+    */
+
+ /*
     it('Sale Complete Test', async function() {
         try {           
             var isComplete = await tokenSaleContract.completeSale();
@@ -421,7 +412,7 @@ contract('PeblikTokenSale', function(accounts) {
             console.log(error);                
         }
     })
-
+*/
     function sleep(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
@@ -463,7 +454,12 @@ contract('PeblikTokenSale', function(accounts) {
             case "WalletChanged": {
                 console.log("Event:" + " " + log.event +": " + log.args.newWallet);
                 break;
-            }            
+            }        
+            case "PaymentSourceChanged": {
+                console.log("Event:" + " " + log.event +": oldSource " + log.args.oldSource + " newSource " + log.args.newSource);
+                break;
+            }        
+                
             default: {
                 //console.log(log.event);
                 console.log(log);

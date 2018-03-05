@@ -152,7 +152,7 @@ contract BaseTokenSale is Pausable {
     /**
      * @dev Purchase tokens with Ether.
      */
-    function buyTokens() whenNotPaused public payable {
+    function buyTokens() whenNotPaused public payable { 
         require(validPurchase(msg.sender));
         
         uint256 weiAmount = msg.value;
@@ -244,12 +244,28 @@ contract BaseTokenSale is Pausable {
     // 
     // @return true if buyers can buy at the moment
     function validPurchase(address _buyer) internal view returns (bool) {
+        /* 
+        //return true;
+        if (now >= startTime) {
+            return true;
+            if (now <= endTime) {
+                return true;
+                if (!capReached) {
+                    return true;
+                    if (isWhitelisted(_buyer)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        */
         if (now >= startTime && now <= endTime && !capReached) {
             // in main sale period
             if (isWhitelisted(_buyer)) {
                 return true;
             } 
         }
+        
         return false;
     }
 
@@ -376,12 +392,12 @@ contract BaseTokenSale is Pausable {
     }
 
     function calcTokens(uint256 weiAmount) public view returns (uint256 value) {
-        uint256 price = getDollarPrice(weiAmount, 0, 0, msg.sender);
+        uint256 price = getDollarPrice(weiAmount, centsRaised, tokensSold, msg.sender);
         return weiAmount.mul(centsPerEth).div(price);
     }
 
     function calcCentsToTokens(uint256 centsAmount) public view returns (uint256 value) {
-        uint256 price = getDollarPrice(0,0,0, msg.sender);
+        uint256 price = getDollarPrice(centsAmount, centsRaised, tokensSold, msg.sender);
         uint256 tokens = centsAmount.mul(10 ** token.decimals()).div(price);
 
         return tokens;

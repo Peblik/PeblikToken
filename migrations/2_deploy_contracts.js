@@ -11,7 +11,7 @@ module.exports = function(deployer, network, accounts) {
 
       const earlyTime = Math.round((dt.getTime())/1000); // one second in the future
       //const startTime = earlyTime + 1800; // 30 minutes in the future
-      const startTime = earlyTime + 10; // 8 seconds in the future
+      const startTime = earlyTime + 10; // 10 seconds in the future
       const endTime = startTime + 5400; // 90 minutes after start
           
       const centsPerToken = 15;
@@ -24,23 +24,27 @@ module.exports = function(deployer, network, accounts) {
       console.log("Token Address: " + Token.address + " earlyTime: " + earlyTime  + " startTime: " + startTime + " endTime: " + endTime + " centsPerToken: " + centsPerToken 
       + " centsPerEth: " + centsPerEth + " cap: " + cap + " minAmount: " + minAmount + " maxAmount: " + minAmount + " wallet: " + accounts[7]);
     
-      return deployer.deploy(Presale, Token.address, earlyTime, startTime, endTime, centsPerToken, centsPerEth, cap, minAmount, maxAmount, accounts[7]).then(function () {
+      deployer.deploy(Presale, Token.address, earlyTime, startTime, endTime, centsPerToken, centsPerEth, cap, minAmount, maxAmount, accounts[7]).then(function () {
         console.log("PeblikPresale deployed at " + Presale.address);
+        
+        //return Token.setController(Presale.address).then(function () {
+        //  console.log("Controller set to " + Token.controller());
+        //})
+      });
 
-      //const thresholds = [new web3.BigNumber(0),new web3.BigNumber(50000),new web3.BigNumber(100000),new web3.BigNumber(150000)];
-      //const prices = [new web3.BigNumber(25),new web3.BigNumber(35),new web3.BigNumber(45),new web3.BigNumber(50)];
-
+      const startTokenTime = Math.round((dt.getTime())/1000); // now
+      const endTokenTime = startTokenTime + 5400; // 90 minutes after start
+      
       const thresholds = [0,50000,100000,150000];
       const prices = [25,35,45,50];
 
-      //PeblikTokenSale(address _token, uint256 _startTime, uint256 _endTime, uint256 _centsPerToken, uint256 _centsPerEth, uint256 _cap, uint256 _min, uint256 _max, address _wallet, uint256[] _thresholds, uint256[] _prices)
-      return deployer.deploy(TokenSale, Token.address, startTime, endTime, centsPerToken, centsPerEth, cap, minAmount, maxAmount, accounts[7], thresholds, prices).then(function () { 
+      return deployer.deploy(TokenSale, Token.address, startTokenTime, endTokenTime, centsPerToken, centsPerEth, cap, minAmount, maxAmount, accounts[7], thresholds, prices).then(function () { 
         console.log("PeblikTokenSale deployed at " + TokenSale.address);
 
         //return Token.setController(Presale.address).then(function () {
         //  console.log("Controller set to " + Token.controller());
         //})
+        
       });
-    });
   });
 };

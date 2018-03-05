@@ -306,18 +306,12 @@ contract('PeblikPresale', function(accounts) {
         }
     });
 
-    /*
-
-    claimStrandedTokens(address _token, address _to) public onlyOwner returns (bool)
-
-    */
-
    it('change Conversion Rate', async function() {
         try {
             const newRate = new web3.BigNumber(95000);
             var conversionRate = await presaleContract.centsPerEth.call();
             
-            presaleContract.changeConversionRate(newRate).then((result) => { 
+            await presaleContract.changeConversionRate(newRate).then((result) => { 
                 for (var i = 0; i < result.logs.length; i++) {
                     var log = result.logs[i];
                     RecordLog(log);
@@ -333,7 +327,7 @@ contract('PeblikPresale', function(accounts) {
     it('change Wallet', async function() {
         try {
                       
-            presaleContract.changeWallet(wallet2).then((result) => { 
+            await presaleContract.changeWallet(wallet2).then((result) => { 
                 for (var i = 0; i < result.logs.length; i++) {
                     var log = result.logs[i];
                     RecordLog(log);
@@ -346,7 +340,28 @@ contract('PeblikPresale', function(accounts) {
         }
     });
 
-    it('buys tokens after Rate Change and Wallet', async function(){
+    it('change Price', async function() {
+        try {
+            const centsPerToken = 16;
+            //changePrice(uint256 _newPrice) public onlyOwner returns (bool success)          
+            await presaleContract.changeWallet(changePrice).then((result) => { 
+                for (var i = 0; i < result.logs.length; i++) {
+                    var log = result.logs[i];
+                    RecordLog(log);
+                }
+            });
+            await sleep(500);
+            await presaleContract.getDollarPriceExternal(changePrice);
+            //getDollarPriceExternal(uint256 _value, uint256 _centsRaised, uint256 _tokensSold, address _buyer) 
+            assert.equal(centsPerToken, centsPerToken, 'change Price Failed');                
+        } catch (error) {
+            console.log(error);                
+        }
+    });
+
+
+
+    it('buys tokens after Rate, Price and Wallet Change', async function(){
         const weiAmount = 1 * 1000000000000000000;
         try {
             const tokenAmount = (await presaleContract.calcTokens.call(weiAmount)).toNumber();
@@ -356,7 +371,7 @@ contract('PeblikPresale', function(accounts) {
             //var TokenCap = await presaleContract.getTokenCap();
             //console.log("Tokens Sold: " + TokensSold + " Token Cap " + TokenCap);
             var isCapReached = await presaleContract.getcapReached();
-            assert.equal(isCapReached, false, 'buys tokens after Rate Change and Wallet - Cap Reached Failed');
+            assert.equal(isCapReached, false, 'buys tokens after Rate, Price and Wallet Change - Cap Reached Failed');
 
             const totalExpected = (await tokenContract.totalSupply()).toNumber();
             const buyerExpected = (await tokenContract.balanceOf(buyer2)).toNumber();
@@ -384,10 +399,10 @@ contract('PeblikPresale', function(accounts) {
             //console.log("totalSupply = " + totalSupply);
             //console.log("walletBal = " + walletBal);
 
-            assert.equal(walletOldBal, walletOldExpected, 'buys tokens after Rate Change and Wallet - Wallet1 balance did not increase correctly');  
-            assert.equal(walletBal, walletExpected + weiAmount, 'buys tokens after Rate Change and Wallet - Wallet2 balance did not increase correctly');  
-            assert.equal(totalSupply, totalExpected + tokenAmount, 'buys tokens after Rate Change and Wallet - Total supply did not increase correctly'); 
-            assert.equal(buyerBal, buyerExpected + tokenAmount, 'buys tokens after Rate Change and Wallet - Balance did not increase correctly');
+            assert.equal(walletOldBal, walletOldExpected, 'buys tokens after Rate, Price and Wallet Change - Wallet1 balance did not increase correctly');  
+            assert.equal(walletBal, walletExpected + weiAmount, 'buys tokens after Rate, Price and Wallet Change - Wallet2 balance did not increase correctly');  
+            assert.equal(totalSupply, totalExpected + tokenAmount, 'buys tokens after Rate, Price and Wallet Change - Total supply did not increase correctly'); 
+            assert.equal(buyerBal, buyerExpected + tokenAmount, 'buys tokens after Rate, Price and Wallet Change - Balance did not increase correctly');
 
         } catch (error) {
             console.log(error);              
