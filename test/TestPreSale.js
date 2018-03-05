@@ -165,7 +165,6 @@ contract('PeblikPresale', function(accounts) {
             var isCapReached = await presaleContract.getcapReached();
             assert.equal(isCapReached, false, 'buys tokens - Cap Reached Failed');
 
-
             const totalExpected = (await tokenContract.totalSupply()).toNumber();
             const buyerExpected = (await tokenContract.balanceOf(buyer2)).toNumber();
             const walletExpected = (await web3.eth.getBalance(wallet1)).toNumber();
@@ -213,7 +212,7 @@ contract('PeblikPresale', function(accounts) {
             const totalExpected = (await tokenContract.totalSupply()).toNumber();
             const buyerExpected = (await tokenContract.balanceOf(buyer2)).toNumber();
 
-            presaleContract.externalPurchase(buyer2, centsAmount, {from: pmtSrc}).then((result) => {              
+            await presaleContract.externalPurchase(buyer2, centsAmount, {from: pmtSrc}).then((result) => {              
                 for (var i = 0; i < result.logs.length; i++) {
                     //console.log(i);
                     var log = result.logs[i];
@@ -317,6 +316,7 @@ contract('PeblikPresale', function(accounts) {
                     RecordLog(log);
                 }
             });
+
             const changedRate = await presaleContract.centsPerEth.call();
             assert.equal(changedRate.toNumber(), newRate.toNumber(), 'change Conversion Rate Failed');                
         } catch (error) {
@@ -333,7 +333,7 @@ contract('PeblikPresale', function(accounts) {
                     RecordLog(log);
                 }
             });
-            await sleep(500);
+
             assert.equal(true, true, 'change Wallet Failed');                
         } catch (error) {
             console.log(error);                
@@ -367,9 +367,6 @@ contract('PeblikPresale', function(accounts) {
             const tokenAmount = (await presaleContract.calcTokens.call(weiAmount)).toNumber();
             console.log("tokenAmount = " + tokenAmount);
 
-            //var TokensSold = await presaleContract.getTokensSold();
-            //var TokenCap = await presaleContract.getTokenCap();
-            //console.log("Tokens Sold: " + TokensSold + " Token Cap " + TokenCap);
             var isCapReached = await presaleContract.getcapReached();
             assert.equal(isCapReached, false, 'buys tokens after Rate, Price and Wallet Change - Cap Reached Failed');
 
@@ -384,8 +381,6 @@ contract('PeblikPresale', function(accounts) {
                     RecordLog(log);
                 }
              });
-
-            await sleep(500);
 
             // check that the buyer got the right amount of tokens
             const buyerBal = (await tokenContract.balanceOf(buyer2)).toNumber();
@@ -413,13 +408,14 @@ contract('PeblikPresale', function(accounts) {
         try {
             var startTime = await presaleContract.getStartTime();
             const newTime = startTime.toNumber() + 1;
-            presaleContract.changeStartTime(newTime).then((result) => { 
+
+            await presaleContract.changeStartTime(newTime).then((result) => { 
                 for (var i = 0; i < result.logs.length; i++) {
                     var log = result.logs[i];
                     RecordLog(log);
                 }
              });
-            await sleep(500);
+
             startTime = await presaleContract.getStartTime();
             assert.equal(newTime, startTime.toNumber(), 'change Start Time Failed');                
         } catch (error) {
@@ -431,13 +427,14 @@ contract('PeblikPresale', function(accounts) {
         try {
             var endTime = await presaleContract.getEndTime();
             const newTime = endTime.toNumber() + 1;
-            presaleContract.changeEndTime(newTime).then((result) => { 
+
+            await presaleContract.changeEndTime(newTime).then((result) => { 
                 for (var i = 0; i < result.logs.length; i++) {
                     var log = result.logs[i];
                     RecordLog(log);
                 }
             });
-            await sleep(500);
+
             endTime = await presaleContract.getEndTime();
             assert.equal(newTime, endTime.toNumber(), 'change End Time Failed');                
         } catch (error) {
@@ -449,7 +446,7 @@ contract('PeblikPresale', function(accounts) {
         try {
             var isEarly = await presaleContract.isEarly();
             assert.equal(isEarly, true, 'Should be in earlybird phase');
-            await sleep(10000);
+            await sleep(15000);
             isEarly = await presaleContract.isEarly();
             assert.equal(isEarly, false, 'Early bird phase should be over now');                
         } catch (error) {
