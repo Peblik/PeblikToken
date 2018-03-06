@@ -26,11 +26,6 @@ contract PeblikPresale is BaseTokenSale {
 
     uint256 public earlylistCount;
 
-    /**
-     * @dev Keeps track of when price changes occurred, to help with reporting and customer suppport inquiries.
-     */
-    RateHistory[] public priceHistory;
-
     event EarlyBuyerAdded(address buyer, uint256 buyerCount);
     event EarlyBuyerRemoved(address buyer, uint256 buyerCount);
     event PriceChanged(uint256 newPrice);
@@ -89,7 +84,6 @@ contract PeblikPresale is BaseTokenSale {
         require(!saleComplete);
 
         pricing.changePrice(_newPrice);
-        priceHistory.push(RateHistory(now, _newPrice));
 
         PriceChanged(_newPrice);
     }

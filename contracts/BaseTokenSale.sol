@@ -67,16 +67,6 @@ contract BaseTokenSale is Pausable {
 
     uint256 public whitelistCount;
 
-    struct RateHistory {
-        uint256 rate;
-        uint256 timestamp;
-    }
-
-    /**
-     * @dev Keeps track of when coversion rate changes occurred, to help with reporting and customer suppport inquiries.
-     */
-    RateHistory[] public conversionHistory;
-
     /**
     * @dev Log a token purchase.
     * @param purchaser The address that paid for the tokens
@@ -316,8 +306,7 @@ contract BaseTokenSale is Pausable {
         // keep min/max in sync
         minWei = minCents.div(centsPerEth).mul(1 ether);
         maxWei = maxCents.div(centsPerEth).mul(1 ether);
-        
-        conversionHistory.push(RateHistory(now, _newRate));
+
         ConversionRateChanged(centsPerEth);
     }
 
