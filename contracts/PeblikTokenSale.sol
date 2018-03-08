@@ -58,7 +58,6 @@ contract PeblikTokenSale is BaseTokenSale {
         pricing.changeLevels(_thresholds, _prices);
     }
 
-
     /**
      * @dev Override to mint tokens for post-sale allocations.
      */

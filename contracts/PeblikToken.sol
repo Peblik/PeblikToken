@@ -104,6 +104,7 @@ contract PeblikToken is TransferableToken, MintableToken {
         }
 
         totalSupply_ = totalSupply_.add(_amount);
+        availableSupply = availableSupply.sub(_amount);
         balances[_to] = balances[_to].add(_amount);
 
         Mint(_to, _amount);

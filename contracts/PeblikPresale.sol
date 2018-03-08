@@ -26,8 +26,8 @@ contract PeblikPresale is BaseTokenSale {
 
     uint256 public earlylistCount;
 
-    event EarlyBuyerAdded(address buyer, uint256 buyerCount);
-    event EarlyBuyerRemoved(address buyer, uint256 buyerCount);
+    event EarlyBuyerAdded(address indexed buyer, uint256 buyerCount);
+    event EarlyBuyerRemoved(address indexed buyer, uint256 buyerCount);
     event PriceChanged(uint256 newPrice);
 
     /**

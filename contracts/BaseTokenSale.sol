@@ -84,8 +84,8 @@ contract BaseTokenSale is Pausable {
     event ConversionRateChanged(uint256 newRate);
     event WalletChanged(address newWallet);
     event PaymentSourceChanged(address indexed oldSource, address indexed newSource);
-    event BuyerAdded(address buyer, uint256 buyerCount);
-    event BuyerRemoved(address buyer, uint256 buyerCount);
+    event BuyerAdded(address indexed buyer, uint256 buyerCount);
+    event BuyerRemoved(address indexed buyer, uint256 buyerCount);
     event CapReached(uint256 cap, uint256 tokensSold);
     event PurchaseError(string msg, address indexed sender);
 
