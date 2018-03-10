@@ -13,13 +13,20 @@ contract('PeblikTokenSale', function(accounts) {
     const wallet1 = accounts[7];
     const wallet2 = accounts[8];
 
+    const weiPerEth = 1000000000000000000;
+
     let tokenSaleContract;
     let tokenContract;
+    
+    let tokenCap;
 
     before('setup contracts for all tests', async function () {
         // cache instances of the contracts for use in all the tests
         PeblikTokenSale.deployed().then(async function (instance) {
             tokenSaleContract = instance;
+
+            tokenCap = (await tokenSaleContract.tokenCap()) / weiPerEth;
+            console.log("tokenCap = " + tokenCap)
         });
 
         PeblikToken.deployed().then(async function (tokenInstance) {
@@ -83,14 +90,13 @@ contract('PeblikTokenSale', function(accounts) {
     });
 
     it('buys tokens', async function(){
-        const weiAmount = 1 * 1000000000000000000;
+        const weiAmount = 1 * weiPerEth;
         try {
             const tokenAmount = (await tokenSaleContract.calcTokens.call(weiAmount)).toNumber();
             console.log("tokenAmount = " + tokenAmount);
 
-            var TokensSold = await tokenSaleContract.tokensSold();
-            var TokenCap = await tokenSaleContract.tokenCap();
-            console.log("Tokens Sold: " + TokensSold + " Cap: " + TokenCap);
+            var tokensSold = (await tokenSaleContract.tokensSold()) / weiPerEth;
+            console.log("Tokens Sold: " + tokensSold + " Cap: " + tokenCap);
 
             var isCapReached = await tokenSaleContract.capReached();
             assert.equal(isCapReached, false, 'buys tokens - Cap Reached Failed');
@@ -131,14 +137,13 @@ contract('PeblikTokenSale', function(accounts) {
     });
 
     it('buys enough tokens to end first phase', async function(){
-        const weiAmount = 10 * 1000000000000000000;
+        const weiAmount = 1 * weiPerEth;
         try {
             const tokenAmount = (await tokenSaleContract.calcTokens.call(weiAmount)).toNumber();
             console.log("tokenAmount = " + tokenAmount);
 
-            var TokensSold = await tokenSaleContract.tokensSold();
-            var TokenCap = await tokenSaleContract.tokenCap();
-            console.log("Tokens Sold: " + TokensSold + " Token Cap " + TokenCap);
+            var tokensSold = (await tokenSaleContract.tokensSold()) / weiPerEth;
+            console.log("Tokens Sold: " + tokensSold + " Token Cap " + tokenCap);
 
             var isCapReached = await tokenSaleContract.capReached();
             assert.equal(isCapReached, false, 'buys enough tokens - Cap Reached Failed');
@@ -179,17 +184,14 @@ contract('PeblikTokenSale', function(accounts) {
     });
 
     it('buys fail because less than the min amount', async function(){
-        const weiAmount = 1 * 1000000000000000000;   
+        const weiAmount = 1 * weiPerEth;   
         try {
             const tokenAmount = (await tokenSaleContract.calcTokens.call(weiAmount)).toNumber();
             //console.log("tokenAmount = " + tokenAmount);
             const calcCentsToWeiMin = (await tokenSaleContract.calcCentsToWei.call(10000)).toNumber();
             console.log("calcCentsToWeiMin = " + calcCentsToWeiMin);
         
-            //var TokensSold = await tokenSaleContract.getTokensSold();
-            //var TokenCap = await tokenSaleContract.getTokenCap();
-            //console.log("Tokens Sold: " + TokensSold + " Token Cap " + TokenCap);
-            var isCapReached = await tokenSaleContract.getcapReached();
+            var isCapReached = await tokenSaleContract.capReached();
             assert.equal(isCapReached, false, 'buys tokens - Cap Reached Failed');
 
 
@@ -228,17 +230,14 @@ contract('PeblikTokenSale', function(accounts) {
     });
 
     it('buys fail because more than the max amount', async function(){
-        const weiAmount = 1 * 1000000000000000000;   
+        const weiAmount = 1 * weiPerEth;   
         try {
             const tokenAmount = (await tokenSaleContract.calcTokens.call(weiAmount)).toNumber();
             //console.log("tokenAmount = " + tokenAmount);
             const calcCentsToWeiMax = (await tokenSaleContract.calcCentsToWei.call(1000000)).toNumber();
             console.log("calcCentsToWeiMax = " + calcCentsToWeiMax);
         
-            //var TokensSold = await tokenSaleContract.getTokensSold();
-            //var TokenCap = await tokenSaleContract.getTokenCap();
-            //console.log("Tokens Sold: " + TokensSold + " Token Cap " + TokenCap);
-            var isCapReached = await tokenSaleContract.getcapReached();
+            var isCapReached = await tokenSaleContract.capReached();
             assert.equal(isCapReached, false, 'buys tokens - Cap Reached Failed');
 
 
@@ -434,7 +433,7 @@ contract('PeblikTokenSale', function(accounts) {
     });
 
     it('buys tokens after Rate Change and Wallet', async function(){
-        const weiAmount = 1 * 1000000000000000000;
+        const weiAmount = 1 * weiPerEth;
         try {
             const tokenAmount = (await tokenSaleContract.calcTokens.call(weiAmount)).toNumber();
 
@@ -486,7 +485,7 @@ contract('PeblikTokenSale', function(accounts) {
                     //console.log(log);
                     RecordLog(log);
                 }
-                //utils.assertEvent(tokenSaleContract, { event: "Mint", logIndex: 0, args: { to: buyer2, amount: 1000000000000000000 }});
+                //utils.assertEvent(tokenSaleContract, { event: "Mint", logIndex: 0, args: { to: buyer2, amount: weiPerEth }});
             });
 
             startTime = await tokenSaleContract.startTime();
@@ -507,7 +506,7 @@ contract('PeblikTokenSale', function(accounts) {
                     //console.log(log);
                     RecordLog(log);
                 }
-                //utils.assertEvent(tokenSaleContract, { event: "Mint", logIndex: 0, args: { to: buyer2, amount: 1000000000000000000 }});
+                //utils.assertEvent(tokenSaleContract, { event: "Mint", logIndex: 0, args: { to: buyer2, amount: weiPerEth }});
             });
             endTime = await tokenSaleContract.endTime();
             assert.equal(newTime, endTime.toNumber(), 'change End Time Failed');                
@@ -524,7 +523,7 @@ contract('PeblikTokenSale', function(accounts) {
                     //console.log(log);
                     RecordLog(log);
                 }
-                //utils.assertEvent(tokenSaleContract, { event: "Mint", logIndex: 0, args: { to: buyer2, amount: 1000000000000000000 }});
+                //utils.assertEvent(tokenSaleContract, { event: "Mint", logIndex: 0, args: { to: buyer2, amount: weiPerEth }});
             });
             var newOwner = await tokenSaleContract.employeePoolWallet();
             assert.equal(newOwner, owner1, 'change Employee Pool Wallet Failed');                
@@ -541,7 +540,7 @@ contract('PeblikTokenSale', function(accounts) {
                     //console.log(log);
                     RecordLog(log);
                 }
-                //utils.assertEvent(tokenSaleContract, { event: "Mint", logIndex: 0, args: { to: buyer2, amount: 1000000000000000000 }});
+                //utils.assertEvent(tokenSaleContract, { event: "Mint", logIndex: 0, args: { to: buyer2, amount: weiPerEth }});
             });
             var newOwner = await tokenSaleContract.advisorPoolWallet();
             assert.equal(newOwner, owner2, 'change Advisor Pool Wallet Failed');                
@@ -558,7 +557,7 @@ contract('PeblikTokenSale', function(accounts) {
                     //console.log(log);
                     RecordLog(log);
                 }
-                //utils.assertEvent(tokenSaleContract, { event: "Mint", logIndex: 0, args: { to: buyer2, amount: 1000000000000000000 }});
+                //utils.assertEvent(tokenSaleContract, { event: "Mint", logIndex: 0, args: { to: buyer2, amount: weiPerEth }});
             });
             var newOwner = await tokenSaleContract.bountyProgramWallet();
             assert.equal(newOwner, wallet1, 'change Bounty Program Wallet Failed');                
@@ -579,12 +578,12 @@ contract('PeblikTokenSale', function(accounts) {
                     //console.log(log);
                     RecordLog(log);
                 }
-                //utils.assertEvent(tokenSaleContract, { event: "Mint", logIndex: 0, args: { to: buyer2, amount: 1000000000000000000 }});
+                //utils.assertEvent(tokenSaleContract, { event: "Mint", logIndex: 0, args: { to: buyer2, amount: weiPerEth }});
             });
 
             await sleep(10000);
 
-            const baseAmount = 1 * 1000000000000000000;
+            const baseAmount = 1 * weiPerEth;
 
             const employeePoolToken = 360000000 * baseAmount;
             const advisorPoolToken = 120000000 * baseAmount;
@@ -606,7 +605,7 @@ contract('PeblikTokenSale', function(accounts) {
                     //console.log(log);
                     RecordLog(log);
                 }
-                //utils.assertEvent(tokenSaleContract, { event: "Mint", logIndex: 0, args: { to: buyer2, amount: 1000000000000000000 }});
+                //utils.assertEvent(tokenSaleContract, { event: "Mint", logIndex: 0, args: { to: buyer2, amount: weiPerEth }});
             });
             
             // check that tokensSold, totalSupply and availableSupply have been updated
