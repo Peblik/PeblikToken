@@ -17,7 +17,7 @@ module.exports = function(deployer, network, accounts) {
       const centsPerToken = 15;
       const centsPerEth = 90000; // $900
       const weiAmount = 1000000000000000000;
-      const cap = new web3.BigNumber(20000 * weiAmount);
+      const cap = new web3.BigNumber(200000 * weiAmount);
       const minAmount =   10000; // $   100
       const maxAmount = 1000000; // $10,000
 

@@ -180,7 +180,7 @@ contract('PeblikTokenSale', function(accounts) {
     });
 
     it('buys enough tokens to end first phase', async function(){
-        const weiAmount = 5 * weiPerEth;
+        const weiAmount = 10 * weiPerEth;
         try {
             var tokensSold = (await tokenSaleContract.tokensSold()) / weiPerEth;
             console.log("Tokens Sold: " + tokensSold + ", Cap: " + tokenCap);
@@ -189,7 +189,7 @@ contract('PeblikTokenSale', function(accounts) {
             const tokenAmount = (await tokenSaleContract.calcTokens.call(weiAmount)).toNumber();
             console.log("tokenAmount = " + tokenAmount);
 
-            await tokenSaleContract.buyTokens({ value: weiAmount, from: buyer3}).then((result) => { 
+            await tokenSaleContract.buyTokens({ value: weiAmount, from: buyer4}).then((result) => { 
                 for (var i = 0; i < result.logs.length; i++) {
                     var log = result.logs[i];
                     RecordLog(log);
@@ -202,19 +202,20 @@ contract('PeblikTokenSale', function(accounts) {
             console.log("newTokensSold = " + newTokensSold);
             console.log("newPrice = " + newPrice);
 
-            assert.equal(newTokensSold, tokensSold + (tokenAmount / weiPerEth), 'Tokens sold updated correctly');  
             assert.isAbove(newPrice, dollarPrice, 'Price should have increased'); 
+            assert.equal(newTokensSold, tokensSold + (tokenAmount / weiPerEth), 'Tokens sold did not update correctly');  
 
         } catch (error) {
-            console.log(error);              
+            console.log(error);
         }
     });
 
     it('buy fails because less than the min amount', async function(){ 
         try {
+            const minCents = await tokenSaleContract.minCents();
             const minWei = await tokenSaleContract.minWei();
             const weiAmount = minWei - 1;
-            console.log("minWei = " + minWei + ", weiAmount = " + weiAmount);
+            console.log("minCents = " + minCents + ", minWei = " + minWei + ", weiAmount = " + weiAmount);
 
             await tokenSaleContract.buyTokens({ value: weiAmount, from: buyer3}).then((result) => { 
                 for (var i = 0; i < result.logs.length; i++) {
@@ -233,9 +234,10 @@ contract('PeblikTokenSale', function(accounts) {
 
     it('buy fails because more than the max amount', async function(){
         try {
+            const maxCents = await tokenSaleContract.maxCents();
             const maxWei = await tokenSaleContract.maxWei();
-            const weiAmount = maxWei - 1;
-            console.log("maxWei = " + maxWei + ", weiAmount = " + weiAmount);
+            const weiAmount = maxWei + 1;
+            console.log("maxCents = " + maxCents + ", maxWei = " + maxWei + ", weiAmount = " + weiAmount);
 
             await tokenSaleContract.buyTokens({ value: weiAmount, from: buyer3}).then((result) => { 
                 for (var i = 0; i < result.logs.length; i++) {
