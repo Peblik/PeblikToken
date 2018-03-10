@@ -371,7 +371,7 @@ contract BaseTokenSale is Pausable {
 
     function calcCentsToTokens(uint256 centsAmount) public view returns (uint256 value) {
         uint256 price = getDollarPrice(centsAmount, centsRaised, tokensSold, msg.sender);
-        uint256 tokens = centsAmount.mul(10 ** token.decimals()).div(price);
+        uint256 tokens = centsAmount.mul(1 ether).div(price);
 
         return tokens;
     }

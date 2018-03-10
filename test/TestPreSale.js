@@ -121,7 +121,7 @@ contract('PeblikPresale', function(accounts) {
         const weiAmount = 1 * 1000000000000000000;
         try {
             const tokenAmount = (await presaleContract.calcTokens.call(weiAmount)).toNumber();
-
+            console.log("tokenAmount = " + tokenAmount);
             var isCapReached = await presaleContract.capReached();
             assert.equal(isCapReached, false, 'buys tokens - Cap Reached Failed');
 
@@ -143,9 +143,48 @@ contract('PeblikPresale', function(accounts) {
             // check that wei was transferred to correct wallet address
             const walletBal = (await web3.eth.getBalance(wallet1)).toNumber();
 
-            //console.log("buyerBal = " + buyerBal);
-            //console.log("totalSupply = " + totalSupply);
-            //console.log("walletBal = " + walletBal);
+            console.log("buyerBal = " + buyerBal);
+            console.log("totalSupply = " + totalSupply);
+            console.log("walletBal = " + walletBal);
+
+            assert.equal(walletBal, walletExpected + weiAmount, 'Wallet balance did not increase correctly');  
+            assert.equal(totalSupply, totalExpected + tokenAmount, 'Total supply did not increase correctly'); 
+            assert.equal(buyerBal, buyerExpected + tokenAmount, 'Balance did not increase correctly');
+
+        } catch (error) {
+            console.log(error);              
+        }
+    });
+
+    it('buys more tokens', async function(){
+        const weiAmount = 1 * 1000000000000000000;
+        try {
+            const tokenAmount = (await presaleContract.calcTokens.call(weiAmount)).toNumber();
+            console.log("tokenAmount = " + tokenAmount);
+            var isCapReached = await presaleContract.capReached();
+            assert.equal(isCapReached, false, 'buys tokens - Cap Reached Failed');
+
+            const totalExpected = (await tokenContract.totalSupply()).toNumber();
+            const buyerExpected = (await tokenContract.balanceOf(buyer2)).toNumber();
+            const walletExpected = (await web3.eth.getBalance(wallet1)).toNumber();
+
+            await presaleContract.buyTokens({ value: weiAmount, from: buyer2}).then((result) => { 
+                for (var i = 0; i < result.logs.length; i++) {
+                    var log = result.logs[i];
+                    RecordLog(log);
+                }
+             });
+
+            // check that the buyer got the right amount of tokens
+            const buyerBal = (await tokenContract.balanceOf(buyer2)).toNumber();
+            // check that tokensSold, totalSupply and availableSupply have been updated
+            const totalSupply = (await tokenContract.totalSupply()).toNumber();
+            // check that wei was transferred to correct wallet address
+            const walletBal = (await web3.eth.getBalance(wallet1)).toNumber();
+
+            console.log("buyerBal = " + buyerBal);
+            console.log("totalSupply = " + totalSupply);
+            console.log("walletBal = " + walletBal);
 
             assert.equal(walletBal, walletExpected + weiAmount, 'Wallet balance did not increase correctly');  
             assert.equal(totalSupply, totalExpected + tokenAmount, 'Total supply did not increase correctly'); 
