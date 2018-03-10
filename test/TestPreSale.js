@@ -158,7 +158,7 @@ contract('PeblikPresale', function(accounts) {
  
     it('makes external purchase', async function() {
         var isPurchased = false;
-        const centsAmount = 10000;
+        const centsAmount = 6000;
         try {
             const source = await presaleContract.paymentSource.call();
             assert.equal(source, pmtSrc, 'makes external purchase - Payment Source Failed');

@@ -15,11 +15,11 @@ module.exports = function(deployer, network, accounts) {
       const endTime = startTime + 5400; // 90 minutes after start
           
       const centsPerToken = 15;
-      const centsPerEth = new web3.BigNumber(90000);
+      const centsPerEth = 90000; // $900
       const weiAmount = 1000000000000000000;
-      const cap = new web3.BigNumber(200000 * weiAmount);
-      const minAmount = new web3.BigNumber(10000);
-      const maxAmount = new web3.BigNumber(1000000);
+      const cap = new web3.BigNumber(20000 * weiAmount);
+      const minAmount =   10000; // $   100
+      const maxAmount = 1000000; // $10,000
 
       console.log("Token Address: " + Token.address + " earlyTime: " + earlyTime  + " startTime: " + startTime + " endTime: " + endTime + " centsPerToken: " + centsPerToken 
       + " centsPerEth: " + centsPerEth + " cap: " + cap + " minAmount: " + minAmount + " maxAmount: " + minAmount + " wallet: " + accounts[7]);

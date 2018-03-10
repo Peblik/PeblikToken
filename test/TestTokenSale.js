@@ -92,11 +92,12 @@ contract('PeblikTokenSale', function(accounts) {
     it('buys tokens', async function(){
         const weiAmount = 1 * weiPerEth;
         try {
+            var tokensSold = (await tokenSaleContract.tokensSold()) / weiPerEth;
+            console.log("Tokens Sold: " + tokensSold + ", Cap: " + tokenCap);
+            const dollarPrice = (await tokenSaleContract.getDollarPriceExternal.call(weiAmount, 0, tokensSold, buyer3));
+            console.log("weiAmount: " + weiAmount + ", Price: " + dollarPrice);
             const tokenAmount = (await tokenSaleContract.calcTokens.call(weiAmount)).toNumber();
             console.log("tokenAmount = " + tokenAmount);
-
-            var tokensSold = (await tokenSaleContract.tokensSold()) / weiPerEth;
-            console.log("Tokens Sold: " + tokensSold + " Cap: " + tokenCap);
 
             var isCapReached = await tokenSaleContract.capReached();
             assert.equal(isCapReached, false, 'buys tokens - Cap Reached Failed');
@@ -106,13 +107,10 @@ contract('PeblikTokenSale', function(accounts) {
             const walletExpected = (await web3.eth.getBalance(wallet1)).toNumber();
 
             await tokenSaleContract.buyTokens({ value: weiAmount, from: buyer3}).then((result) => { 
-                //console.log(result);
                 for (var i = 0; i < result.logs.length; i++) {
                     var log = result.logs[i];
-                    //console.log(log);
                     RecordLog(log);
                 }
-                //utils.assertEvent(tokenSaleContract, { event: "Mint", logIndex: 0, args: { to: buyer1, amount: 1000000000000000000 }})
              });
 
             // check that the buyer got the right amount of tokens
@@ -132,35 +130,32 @@ contract('PeblikTokenSale', function(accounts) {
 
         } catch (error) {
             console.log(error);   
-            assert.isOK(false);
+            assert.isOk(false);
         }
     });
 
-    it('buys enough tokens to end first phase', async function(){
+    it('buys more tokens', async function(){
         const weiAmount = 1 * weiPerEth;
         try {
+            var tokensSold = (await tokenSaleContract.tokensSold()) / weiPerEth;
+            console.log("Tokens Sold: " + tokensSold + ", Cap: " + tokenCap);
+            const dollarPrice = (await tokenSaleContract.getDollarPriceExternal.call(weiAmount, 0, tokensSold, buyer3));
+            console.log("weiAmount: " + weiAmount + ", Price: " + dollarPrice);
             const tokenAmount = (await tokenSaleContract.calcTokens.call(weiAmount)).toNumber();
             console.log("tokenAmount = " + tokenAmount);
 
-            var tokensSold = (await tokenSaleContract.tokensSold()) / weiPerEth;
-            console.log("Tokens Sold: " + tokensSold + " Token Cap " + tokenCap);
-
             var isCapReached = await tokenSaleContract.capReached();
-            assert.equal(isCapReached, false, 'buys enough tokens - Cap Reached Failed');
-
+            assert.equal(isCapReached, false, 'buys tokens - Cap Reached Failed');
 
             const totalExpected = (await tokenContract.totalSupply()).toNumber();
             const buyerExpected = (await tokenContract.balanceOf(buyer3)).toNumber();
             const walletExpected = (await web3.eth.getBalance(wallet1)).toNumber();
 
             await tokenSaleContract.buyTokens({ value: weiAmount, from: buyer3}).then((result) => { 
-                //console.log(result);
                 for (var i = 0; i < result.logs.length; i++) {
                     var log = result.logs[i];
-                    //console.log(log);
                     RecordLog(log);
                 }
-                //utils.assertEvent(tokenSaleContract, { event: "Mint", logIndex: 0, args: { to: buyer1, amount: 1000000000000000000 }})
              });
 
             // check that the buyer got the right amount of tokens
@@ -179,100 +174,81 @@ contract('PeblikTokenSale', function(accounts) {
             assert.equal(buyerBal, buyerExpected + tokenAmount, 'Balance did not increase correctly');
 
         } catch (error) {
-            console.log(error);              
+            console.log(error);   
+            assert.isOk(false);
         }
     });
 
-    it('buys fail because less than the min amount', async function(){
-        const weiAmount = 1 * weiPerEth;   
+    it('buys enough tokens to end first phase', async function(){
+        const weiAmount = 5 * weiPerEth;
         try {
+            var tokensSold = (await tokenSaleContract.tokensSold()) / weiPerEth;
+            console.log("Tokens Sold: " + tokensSold + ", Cap: " + tokenCap);
+            const dollarPrice = (await tokenSaleContract.getDollarPriceExternal.call(weiAmount, 0, tokensSold, buyer3));
+            console.log("weiAmount: " + weiAmount + ", Price: " + dollarPrice);
             const tokenAmount = (await tokenSaleContract.calcTokens.call(weiAmount)).toNumber();
-            //console.log("tokenAmount = " + tokenAmount);
-            const calcCentsToWeiMin = (await tokenSaleContract.calcCentsToWei.call(10000)).toNumber();
-            console.log("calcCentsToWeiMin = " + calcCentsToWeiMin);
-        
-            var isCapReached = await tokenSaleContract.capReached();
-            assert.equal(isCapReached, false, 'buys tokens - Cap Reached Failed');
+            console.log("tokenAmount = " + tokenAmount);
 
-
-            const totalExpected = (await tokenContract.totalSupply()).toNumber();
-            const buyerExpected = (await tokenContract.balanceOf(buyer3)).toNumber();
-            const walletExpected = (await web3.eth.getBalance(wallet1)).toNumber();
-
-            await tokenSaleContract.buyTokens({ value: (calcCentsToWeiMin - 1), from: buyer3}).then((result) => { 
-                //console.log(result);
+            await tokenSaleContract.buyTokens({ value: weiAmount, from: buyer3}).then((result) => { 
                 for (var i = 0; i < result.logs.length; i++) {
                     var log = result.logs[i];
-                    //console.log(log);
                     RecordLog(log);
                 }
-                //utils.assertEvent(tokenSaleContract, { event: "Mint", logIndex: 0, args: { to: buyer1, amount: 1000000000000000000 }})
              });
 
-            // check that the buyer got the right amount of tokens
-            const buyerBal = (await tokenContract.balanceOf(buyer3)).toNumber();
-            // check that tokensSold, totalSupply and availableSupply have been updated
-            const totalSupply = (await tokenContract.totalSupply()).toNumber();
-            // check that wei was transferred to correct wallet address
-            const walletBal = (await web3.eth.getBalance(wallet1)).toNumber();
+            var newTokensSold = (await tokenSaleContract.tokensSold()) / weiPerEth;
+            var newPrice = (await tokenSaleContract.getDollarPriceExternal.call(weiAmount, 0, newTokensSold, buyer3));
 
-            //console.log("buyerBal = " + buyerBal);
-            //console.log("totalSupply = " + totalSupply);
-            //console.log("walletBal = " + walletBal);
+            console.log("newTokensSold = " + newTokensSold);
+            console.log("newPrice = " + newPrice);
 
-            assert.equal(walletBal, walletExpected + weiAmount, 'Wallet balance did not increase correctly');  
-            assert.equal(totalSupply, totalExpected + tokenAmount, 'Total supply did not increase correctly'); 
-            assert.equal(buyerBal, buyerExpected + tokenAmount, 'Balance did not increase correctly');
+            assert.equal(newTokensSold, tokensSold + (tokenAmount / weiPerEth), 'Tokens sold updated correctly');  
+            assert.isAbove(newPrice, dollarPrice, 'Price should have increased'); 
 
         } catch (error) {
             console.log(error);              
         }
     });
 
-    it('buys fail because more than the max amount', async function(){
-        const weiAmount = 1 * weiPerEth;   
+    it('buy fails because less than the min amount', async function(){ 
         try {
-            const tokenAmount = (await tokenSaleContract.calcTokens.call(weiAmount)).toNumber();
-            //console.log("tokenAmount = " + tokenAmount);
-            const calcCentsToWeiMax = (await tokenSaleContract.calcCentsToWei.call(1000000)).toNumber();
-            console.log("calcCentsToWeiMax = " + calcCentsToWeiMax);
-        
-            var isCapReached = await tokenSaleContract.capReached();
-            assert.equal(isCapReached, false, 'buys tokens - Cap Reached Failed');
+            const minWei = await tokenSaleContract.minWei();
+            const weiAmount = minWei - 1;
+            console.log("minWei = " + minWei + ", weiAmount = " + weiAmount);
 
-
-            const totalExpected = (await tokenContract.totalSupply()).toNumber();
-            const buyerExpected = (await tokenContract.balanceOf(buyer3)).toNumber();
-            const walletExpected = (await web3.eth.getBalance(wallet1)).toNumber();
-
-            await tokenSaleContract.buyTokens({ value: (calcCentsToWeiMax + 1), from: buyer3}).then((result) => { 
-                //console.log(result);
+            await tokenSaleContract.buyTokens({ value: weiAmount, from: buyer3}).then((result) => { 
                 for (var i = 0; i < result.logs.length; i++) {
                     var log = result.logs[i];
-                    //console.log(log);
                     RecordLog(log);
                 }
-                //utils.assertEvent(tokenSaleContract, { event: "Mint", logIndex: 0, args: { to: buyer1, amount: 1000000000000000000 }})
              });
 
-            // check that the buyer got the right amount of tokens
-            const buyerBal = (await tokenContract.balanceOf(buyer3)).toNumber();
-            // check that tokensSold, totalSupply and availableSupply have been updated
-            const totalSupply = (await tokenContract.totalSupply()).toNumber();
-            // check that wei was transferred to correct wallet address
-            const walletBal = (await web3.eth.getBalance(wallet1)).toNumber();
-
-            //console.log("buyerBal = " + buyerBal);
-            //console.log("totalSupply = " + totalSupply);
-            //console.log("walletBal = " + walletBal);
-
-            assert.equal(walletBal, walletExpected + weiAmount, 'Wallet balance did not increase correctly');  
-            assert.equal(totalSupply, totalExpected + tokenAmount, 'Total supply did not increase correctly'); 
-            assert.equal(buyerBal, buyerExpected + tokenAmount, 'Balance did not increase correctly');
+            assert.isOk(false, 'Buy below minWei should have failed, but did not');
 
         } catch (error) {
-            console.log(error);              
+            //console.log(error);  
+            assert.isOk(true, 'Buy below minWei failed as intended');            
         }
+    });
+
+    it('buy fails because more than the max amount', async function(){
+        try {
+            const maxWei = await tokenSaleContract.maxWei();
+            const weiAmount = maxWei - 1;
+            console.log("maxWei = " + maxWei + ", weiAmount = " + weiAmount);
+
+            await tokenSaleContract.buyTokens({ value: weiAmount, from: buyer3}).then((result) => { 
+                for (var i = 0; i < result.logs.length; i++) {
+                    var log = result.logs[i];
+                    RecordLog(log);
+                }
+             });
+             assert.isOk(false, 'Buy above maxWei should have failed, but did not');
+
+            } catch (error) {
+                //console.log(error);  
+                assert.isOk(true, 'Buy above maxWei failed as intended');            
+            }
     });
 
     it('makes external purchase', async function() {

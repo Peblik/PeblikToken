@@ -234,28 +234,12 @@ contract BaseTokenSale is Pausable {
     // 
     // @return true if buyers can buy at the moment
     function validPurchase(address _buyer) internal view returns (bool) {
-        /* 
-        //return true;
-        if (now >= startTime) {
-            return true;
-            if (now <= endTime) {
-                return true;
-                if (!capReached) {
-                    return true;
-                    if (isWhitelisted(_buyer)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        */
         if (now >= startTime && now <= endTime && !capReached) {
             // in main sale period
             if (isWhitelisted(_buyer)) {
                 return true;
             } 
         }
-        
         return false;
     }
 
