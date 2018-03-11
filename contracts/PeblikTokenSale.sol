@@ -3,8 +3,8 @@ pragma solidity ^0.4.18;
 import "../node_modules/zeppelin-solidity/contracts/ownership/Ownable.sol";
 import "../node_modules/zeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
 import '../node_modules/zeppelin-solidity/contracts/math/SafeMath.sol';
-import "./IPriceStrategy.sol";
-import "./SaleThresholdPricing.sol";
+//import "./IPriceStrategy.sol";
+//import "./SaleThresholdPricing.sol";
 import "./PeblikToken.sol";
 import "./BaseTokenSale.sol";
 
@@ -17,6 +17,13 @@ contract PeblikTokenSale is BaseTokenSale {
     using SafeMath for uint256;
 
     // Customizations ------------------------
+    struct PriceLevel {
+        uint256 threshold;
+        uint256 dollarPrice;
+    }
+    PriceLevel[] public levels;
+
+    event PriceLevelsChanged(uint256 numLevelsAdded);
 
     // additional wallets where token allocations go after the sale
     address public employeePoolWallet;
@@ -33,8 +40,6 @@ contract PeblikTokenSale is BaseTokenSale {
     event BountyWalletChanged(address newWallet); 
     event SaleComplete(uint256 totalSupply); 
 
-    //event PricesChanged(uint256 level1, uint256 level2, uint256 level3, uint256 level4);
-
     /**
      * @dev Constructor
      *
@@ -50,12 +55,10 @@ contract PeblikTokenSale is BaseTokenSale {
      * @param _thresholds An array of tokens-sold amounts that trigger new price levels
      * @param _prices An array of price-per-token values corresponding to the sales thresholds
      */
-    function PeblikTokenSale(address _token, uint256 _startTime, uint256 _endTime, uint256 _centsPerToken, uint256 _centsPerEth, uint256 _cap, uint256 _min, uint256 _max, address _wallet, uint256[] _thresholds, uint256[] _prices) BaseTokenSale(_token, _startTime,  _endTime, _centsPerToken, _centsPerEth, _cap, _min, _max, _wallet) public {
-        pricing = new SaleThresholdPricing(_thresholds, _prices);
-    }
-
-    function changeLevels(uint256[] _thresholds, uint256[] _prices) public { 
-        pricing.changeLevels(_thresholds, _prices);
+    function PeblikTokenSale(address _token, uint256 _startTime, uint256 _endTime, uint256 _centsPerToken, uint256 _centsPerEth, uint256 _cap, uint256 _min, uint256 _max, address _wallet, uint256[] _thresholds, uint256[] _prices) 
+                BaseTokenSale(_token, _startTime,  _endTime, _centsPerToken, _centsPerEth, _cap, _min, _max, _wallet) public {
+        //pricing = new SaleThresholdPricing(_thresholds, _prices);
+        changePriceLevels(_thresholds, _prices);
     }
 
     /**
@@ -109,4 +112,68 @@ contract PeblikTokenSale is BaseTokenSale {
         bountyProgramWallet = _newWallet;
         BountyWalletChanged(_newWallet);
     }
+
+    // --------------------- PRICING ---------------------
+
+    /**
+     * @dev Change the price per token for the all phases of the sale.
+     * @param _thresholds An array of tokens-sold amounts that trigger new price levels
+     * @param _prices An array of price-per-token values corresponding to the sales thresholds
+     */
+    function changePriceLevels(uint256[] _thresholds, uint256[] _prices) public onlyOwner { 
+        require(_thresholds.length <= 8 && _prices.length <= 8); // keep the levels limited
+        require(_thresholds[0] == 0); // must have a default level
+        require(_thresholds.length == _prices.length); // arrays must have same number of entries
+
+        uint256 prevAmount = 0;
+        // Loops are costly, but  the length of the array is limited so we can live with it.
+        delete levels;
+           
+        for (uint8 i = 0; i < _thresholds.length; i++) {          
+            // Check that all thresholds are increasing
+            if (_thresholds[i] < prevAmount) {
+                revert();
+            }
+            // Prices must be non-zero
+            if (_prices[i] <= 0) {
+                revert();
+            }
+            prevAmount = _thresholds[i];
+            levels.push(PriceLevel(_thresholds[i], _prices[i]));
+            LogPrice(_thresholds[i], _prices[i]);
+        }
+        PriceLevelsChanged(levels.length);
+    }
+
+    /**
+    * Caclulates the effective price for a sale transaction.
+    *
+    * @param _tokensSold The total tokens sold in the sale so far
+    * @return The effective price (in term of price per token)
+    */
+    function getCurrentPrice(uint256 _tokensSold) public view returns (uint256 pricePerToken) {
+        require(_tokensSold >= 0);
+
+        uint256 index;
+        for (index = levels.length - 1; index >= 0; index--) {
+           
+            // Find the highest threshold that's been passed.
+            // Note that this should always succeed for level[0], since that threshold should always be zero.
+            if (_tokensSold >= levels[index].threshold) {
+                break;
+            }
+        }
+        return levels[index].dollarPrice;
+    }
+
+    /**
+     * @dev For testing purposes only. Calculates the number of tokens to be purchased with a given amount of wei.
+     */
+     /*
+    function calcTokens(uint256 weiAmount) public view returns (uint256 value) {
+        uint256 price = getCurrentPrice(tokensSold);
+        return weiAmount.mul(centsPerEth).div(price);
+    }
+    */
+
 }

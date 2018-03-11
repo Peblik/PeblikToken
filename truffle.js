@@ -7,8 +7,10 @@ module.exports = {
   networks: {
     development: {
       host: "localhost",
-      port: 9545,
-      network_id: "*" // Match any network id
+      port: 8545,
+      network_id: "*", // Match any network id
+      gas: 4710000 // note that 47100000 is barely enough -- need to cut down contract size
+      //gas: 4800000 // 47100000 is the max for Ropsten and Mainnet
     },
     azure: {
       host: "nooc4oyz7.westus2.cloudapp.azure.com",
