@@ -18,8 +18,8 @@ module.exports = function(deployer, network, accounts) {
       const centsPerEth = 90000; // $900
       const weiAmount = 1000000000000000000;
       const cap = new web3.BigNumber(200000 * weiAmount);
-      const minAmount =   10000; // $   100
-      const maxAmount = 1000000; // $10,000
+      const minAmount =    9000; // $    90 =  0.1 eth
+      const maxAmount = 1800000; // $18,000 = 20.0 eth
 
       console.log("Token Address: " + Token.address + " earlyTime: " + earlyTime  + " startTime: " + startTime + " endTime: " + endTime + " centsPerToken: " + centsPerToken 
       + " centsPerEth: " + centsPerEth + " cap: " + cap + " minAmount: " + minAmount + " maxAmount: " + minAmount + " wallet: " + accounts[7]);
@@ -46,5 +46,6 @@ module.exports = function(deployer, network, accounts) {
         //})
         
       });
+      
   });
 };

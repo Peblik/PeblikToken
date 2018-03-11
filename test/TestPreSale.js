@@ -196,31 +196,28 @@ contract('PeblikPresale', function(accounts) {
     });
  
     it('makes external purchase', async function() {
-        var isPurchased = false;
-        const centsAmount = 6000;
+        const centsAmount = 12000;
         try {
             const source = await presaleContract.paymentSource.call();
             assert.equal(source, pmtSrc, 'makes external purchase - Payment Source Failed');
-            var isListed = await presaleContract.isEarlylisted(buyer2);
+            var isListed = await presaleContract.isEarlylisted(buyer1);
             assert.equal(isListed, true, 'makes external purchase - Early listed Failed');
 
-            var isCapReached = await presaleContract.capReached();
-            assert.equal(isCapReached, false, 'makes external purchase - Cap Reached Failed');
+            var tokenAmount = (await presaleContract.calcCentsToTokens.call(centsAmount, {from: buyer1})).toNumber();
+            console.log("centsAmount: " + centsAmount + ", tokenAmount: " + tokenAmount);
 
-            var tokenAmount = (await presaleContract.calcCentsToTokens.call(centsAmount, {from: buyer2})).toNumber();
             const totalExpected = (await tokenContract.totalSupply()).toNumber();
-            const buyerExpected = (await tokenContract.balanceOf(buyer2)).toNumber();
-
-            await presaleContract.externalPurchase(buyer2, centsAmount, {from: pmtSrc}).then((result) => {              
+            const buyerExpected = (await tokenContract.balanceOf(buyer1)).toNumber();
+            
+            await presaleContract.externalPurchase(buyer1, centsAmount, {from: pmtSrc}).then((result) => {              
                 for (var i = 0; i < result.logs.length; i++) {
-                    //console.log(i);
                     var log = result.logs[i];
                     RecordLog(log);
                 }
              });
 
             // check that the buyer got the right amount of tokens
-            const buyerBal = (await tokenContract.balanceOf(buyer2)).toNumber();
+            const buyerBal = (await tokenContract.balanceOf(buyer1)).toNumber();
             // check that tokensSold, totalSupply and availableSupply have been updated
             const totalSupply = (await tokenContract.totalSupply()).toNumber();
 
@@ -273,11 +270,13 @@ contract('PeblikPresale', function(accounts) {
         const _tokensSold = 0;
 
         try {
-            const currentPrice = await presaleContract.getDollarPriceExternal(_value,_centsRaised,_tokensSold,buyer1);
-            const expectedPrice = currentPrice + 5;
-            const validPurchase = await presaleContract.changePrice(expectedPrice);
+            const currentPrice = await presaleContract.getCurrentPrice(_tokensSold);
+            console.log("currentPrice: " + currentPrice);
 
-            const newPrice = await presaleContract.getDollarPriceExternal(_value,_centsRaised,_tokensSold,buyer1);
+            const expectedPrice = currentPrice + 5;
+            const changeSuccess = await presaleContract.changePrice(expectedPrice);
+
+            const newPrice = await presaleContract.getCurrentPrice(_tokensSold);
             assert.equal(newPrice, expectedPrice, 'Price Changed Failed');
         } catch (error) {
             console.log(error);
@@ -468,6 +467,10 @@ contract('PeblikPresale', function(accounts) {
             }
             case "ConversionRateChanged": {
                 console.log("Event:" + " " + log.event +": " + log.args.newRate.toNumber());
+                break;
+            }
+            case "LogPrice": {
+                console.log("Event:" + " " + log.event +": tokensSold: " + log.args.tokenLevel.toNumber() + ", price: " + log.args.price.toNumber());
                 break;
             }
             case "WalletChanged": {

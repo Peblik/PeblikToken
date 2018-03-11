@@ -4,16 +4,16 @@ import "../node_modules/zeppelin-solidity/contracts/ownership/Ownable.sol";
 //import "../node_modules/zeppelin-solidity/contracts/crowdsale/Crowdsale.sol";
 import "../node_modules/zeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
 import '../node_modules/zeppelin-solidity/contracts/math/SafeMath.sol';
-import "./IPriceStrategy.sol";
-import "./FlatPricing.sol";
+//import "./IPriceStrategy.sol";
+//import "./FlatPricing.sol";
 import "./BaseTokenSale.sol";
-import "./PeblikToken.sol";
+import "./PeblikToken.sol"; 
 
 /**
  * Manages the Peblik Token Presale. In addition to all the rules defined in the BaseTokenSale superclass:
  * - defines an additional "early bird" period so buyers in the early list can purchase ahead of the main sale phase
  */
-contract PeblikPresale is BaseTokenSale {
+contract PeblikPresale is BaseTokenSale { 
     using SafeMath for uint256;
 
     // Customizations ------------------------
@@ -47,7 +47,7 @@ contract PeblikPresale is BaseTokenSale {
     function PeblikPresale(address _token, uint256 _earlyTime, uint256 _startTime, uint256 _endTime, uint256 _centsPerToken, uint256 _centsPerEth, uint256 _cap, uint256 _min, uint256 _max, address _wallet) BaseTokenSale(_token, _startTime,  _endTime, _centsPerToken, _centsPerEth, _cap, _min, _max, _wallet) public {
         require(_earlyTime >= now);
         earlyTime = _earlyTime;
-        pricing = new FlatPricing(_centsPerToken);
+        //pricing = new FlatPricing(_centsPerToken);
     }
 
     function getTime() public view returns (uint256) {
@@ -75,17 +75,19 @@ contract PeblikPresale is BaseTokenSale {
         return false;        
     }
 
+    
+    // --------------------- PRICING ---------------------
     /**
     * @dev Change the price per token for the current phase of the sale.
     * @param _newPrice The new price, as cents per token
     */
-    function changePrice(uint256 _newPrice) public onlyOwner {
-        require(_newPrice > 0);
-        require(!saleComplete);
-
-        pricing.changePrice(_newPrice);
-
+    function changePrice(uint256 _newPrice) public onlyOwner returns (bool success) {
+        if (_newPrice <= 0) {
+            return false;
+        }
+        price = _newPrice;
         PriceChanged(_newPrice);
+        return true;
     }
 
     // MANAGE WHITELISTS ----------------------------------------------------
@@ -143,4 +145,10 @@ contract PeblikPresale is BaseTokenSale {
         }
         return false;
     }
+/*
+    function calcTokens(uint256 weiAmount) public view returns (uint256 value) {
+        uint256 currentPrice = getCurrentPrice(tokensSold);
+        return weiAmount.mul(centsPerEth).div(currentPrice);
+    }
+    */
 }

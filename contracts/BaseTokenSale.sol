@@ -4,8 +4,8 @@ import "../node_modules/zeppelin-solidity/contracts/ownership/Ownable.sol";
 import "../node_modules/zeppelin-solidity/contracts/lifecycle/Pausable.sol";
 import "../node_modules/zeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
 import '../node_modules/zeppelin-solidity/contracts/math/SafeMath.sol';
-import "./IPriceStrategy.sol";
-import "./FlatPricing.sol";
+//import "./IPriceStrategy.sol";
+//import "./FlatPricing.sol";
 import "./PeblikToken.sol";
 
 /**
@@ -36,6 +36,8 @@ contract BaseTokenSale is Pausable {
     // address where funds are collected
     address public wallet;
 
+    uint256 public price;
+
     // Customizations ------------------------
 
     // Address of the account from which external (non-ETH) transactions will be received.
@@ -57,7 +59,7 @@ contract BaseTokenSale is Pausable {
     bool public capReached = false;
     bool public saleComplete = false;
 
-    IPriceStrategy public pricing;
+    //IPriceStrategy public pricing;
 
     // list of addresses that can purchase during the presale
     mapping (address => bool) public whitelist;
@@ -88,6 +90,8 @@ contract BaseTokenSale is Pausable {
     event BuyerRemoved(address indexed buyer, uint256 buyerCount);
     event CapReached(uint256 cap, uint256 tokensSold);
     event PurchaseError(string msg, address indexed sender);
+    // TEST
+    event LogPrice(uint256 tokenLevel, uint256 price);
 
     /**
      * @dev Constructor
@@ -117,6 +121,7 @@ contract BaseTokenSale is Pausable {
         token = PeblikToken(_token);
         startTime = _startTime;
         endTime = _endTime;
+        price = _centsPerToken;
         centsPerEth = _centsPerEth;
         tokenCap = _cap;
         wallet = _wallet;
@@ -128,8 +133,8 @@ contract BaseTokenSale is Pausable {
         minCents = _min;
         maxCents = _max;
 
-        minWei = _min.div(centsPerEth).mul(1 ether);
-        maxWei = _max.div(centsPerEth).mul(1 ether);
+        minWei = _min.mul(1 ether).div(centsPerEth);
+        maxWei = _max.mul(1 ether).div(centsPerEth);
     }
 
     /**
@@ -152,6 +157,7 @@ contract BaseTokenSale is Pausable {
         if (!buyWithCents(msg.sender, centsAmount)) {
             revert();
         }
+
         centsRaised = centsRaised.add(centsAmount);
         weiRaised = weiRaised.add(weiAmount);
 
@@ -169,6 +175,8 @@ contract BaseTokenSale is Pausable {
         require(_buyer != 0x0);
         require(validPurchase(_buyer));
         require(msg.sender == paymentSource); // transaction must come from pre-approved address
+        // TEST
+        ExternalPurchase(_buyer, msg.sender, _centsAmount);
 
         bool success = buyWithCents(_buyer, _centsAmount);
 
@@ -198,18 +206,23 @@ contract BaseTokenSale is Pausable {
             PurchaseError("Above maximum purchase amount.", _buyer);
             revert();
         }
-        
-        uint256 price = getDollarPrice(_centsAmount, centsRaised, tokensSold, _buyer);
+
+        uint256 currentPrice = getCurrentPrice(tokensSold);
+        // TEST
+        LogPrice(tokensSold, currentPrice);
 
         // Price should never be zero, but just in case.
-        if (price == 0) {
+        /*if (currentPrice == 0) {
             PurchaseError("Price is zero.", _buyer);
             return false;
-        }
+        }*/
 
         // Convert to a token amount with decimals.
         // Note that this assumes that the token has 18 decimal places (as ours does).
-        uint256 tokens = _centsAmount.mul(1 ether).div(price);
+        //uint256 temp = _centsAmount.div(price);
+        //uint256 tokens = temp.mul(1 ether);
+        
+        uint256 tokens = _centsAmount.mul(1 ether).div(currentPrice);
         
         // mint tokens as we go
         token.mint(_buyer, tokens);
@@ -219,7 +232,7 @@ contract BaseTokenSale is Pausable {
 
         // update presale stats
         centsRaised = centsRaised.add(_centsAmount);
-        tokensSold = tokensSold.add(tokens);
+        tokensSold = tokensSold.add(tokens.div(1 ether));
 
         TokensBought(msg.sender, _buyer, _centsAmount, tokens, centsRaised, tokensSold);
 
@@ -228,6 +241,7 @@ contract BaseTokenSale is Pausable {
             capReached = true;
             CapReached(tokenCap, tokensSold);
         }
+        
         return true;
     }
 
@@ -341,9 +355,16 @@ contract BaseTokenSale is Pausable {
         return whitelist[_buyer];
     }
 
-    function getDollarPrice(uint256 _value, uint256 _centsRaised, uint256 _tokensSold, address _buyer) internal view returns (uint256 price) {
-        return pricing.getCurrentPrice(_value, _centsRaised, _tokensSold, _buyer);
+    /**
+    * Caclulates the effective price for a sale transaction.
+    *
+    * @param _tokensSold The total tokens sold in the sale so far
+    * @return The effective price (in term of price per token)
+    */
+    function getCurrentPrice(uint256 _tokensSold) public view returns (uint256 pricePerToken) {
+        return price;
     }
+
 
     /**
      * @dev In case someone accidentally sends other ERC20 tokens to this contract,
@@ -360,20 +381,17 @@ contract BaseTokenSale is Pausable {
     /** Testing functions, for test script and debugging use. **/
     /** These will be removed from the production contracts before deploying to mainnet. */
 
-    function getDollarPriceExternal(uint256 _value, uint256 _centsRaised, uint256 _tokensSold, address _buyer) public view returns (uint256 price) {
-        return pricing.getCurrentPrice(_value, _centsRaised, _tokensSold, _buyer);
-    }
-
+    
     function calcTokens(uint256 weiAmount) public view returns (uint256 value) {
-        uint256 price = getDollarPrice(weiAmount, centsRaised, tokensSold, msg.sender);
-        return weiAmount.mul(centsPerEth).div(price);
+        uint256 currentPrice = getCurrentPrice(tokensSold);
+        return weiAmount.mul(centsPerEth).div(currentPrice);
     }
-
+    
     function calcCentsToTokens(uint256 centsAmount) public view returns (uint256 value) {
-        uint256 price = getDollarPrice(centsAmount, centsRaised, tokensSold, msg.sender);
-        uint256 tokens = centsAmount.mul(1 ether).div(price);
+        uint256 currentPrice = getCurrentPrice(tokensSold);
+        uint256 tokens = centsAmount.mul(1 ether).div(currentPrice);
 
         return tokens;
     }
-
+    
 }
