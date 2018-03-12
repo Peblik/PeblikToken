@@ -50,10 +50,6 @@ contract PeblikPresale is BaseTokenSale {
         //pricing = new FlatPricing(_centsPerToken);
     }
 
-    function getTime() public view returns (uint256) {
-        return earlyTime;
-    }
-
     /** 
      * @dev Overrides validPurchase to add earlylist check. 
      * @return true if buyers can buy at the moment
@@ -119,22 +115,6 @@ contract PeblikPresale is BaseTokenSale {
 
     /* Testing methods */
     /* These will be removed prior to deployment on mainnet. */
-    function validPurchasePublic(address _buyer) public view returns (bool) {
-        if (now >= earlyTime && now <= endTime && !capReached) {
-            if (now < startTime) {
-                // in early period
-                if (isEarlylisted(_buyer)) {
-                    return true;
-                }
-            } else {
-                // in main sale period
-                if (isListed(_buyer)) {
-                    return true;
-                } 
-            }
-        }
-        return false;
-    }
 
     function isEarly() public view returns (bool) {
         if (now >= earlyTime && now <= endTime && !capReached) {
@@ -145,10 +125,4 @@ contract PeblikPresale is BaseTokenSale {
         }
         return false;
     }
-/*
-    function calcTokens(uint256 weiAmount) public view returns (uint256 value) {
-        uint256 currentPrice = getCurrentPrice(tokensSold);
-        return weiAmount.mul(centsPerEth).div(currentPrice);
-    }
-    */
 }

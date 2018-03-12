@@ -17,7 +17,7 @@ module.exports = function(deployer, network, accounts) {
       const centsPerToken = 15;
       const centsPerEth = 90000; // $900
       const weiAmount = 1000000000000000000;
-      const cap = new web3.BigNumber(200000 * weiAmount);
+      const cap = 100000;
       const minAmount =    9000; // $    90 =  0.1 eth
       const maxAmount = 1800000; // $18,000 = 20.0 eth
 
@@ -38,7 +38,9 @@ module.exports = function(deployer, network, accounts) {
       const thresholds = [0,50000,100000,150000];
       const prices = [25,35,45,50];
 
-      return deployer.deploy(TokenSale, Token.address, startTokenTime, endTokenTime, centsPerToken, centsPerEth, cap, minAmount, maxAmount, accounts[7], thresholds, prices).then(function () { 
+      const newCap = 200000;
+
+      return deployer.deploy(TokenSale, Token.address, startTokenTime, endTokenTime, centsPerToken, centsPerEth, newCap, minAmount, maxAmount, accounts[7], thresholds, prices).then(function () { 
         console.log("PeblikTokenSale deployed at " + TokenSale.address);
 
         //return Token.setController(Presale.address).then(function () {

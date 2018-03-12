@@ -105,20 +105,26 @@ contract('PeblikPresale', function(accounts) {
         }
     });
 
-    it('gets time', async function() {
-        var currentDate = Math.round((new Date().getTime()) / 1000);
+    it('cannot buy if not on early list', async function(){
         try {
-            var timex = await presaleContract.getTime.call();
-            var testit = timex.toNumber() <= currentDate;
-            //console.log(testit);
-            assert.equal(testit, true, 'Get Time Failed');
+            const weiAmount = new web3.BigNumber(1 * 1000000000000000000); // 1 eth
+            const tokenAmount = (await presaleContract.calcTokens.call(weiAmount.toNumber())).toNumber();
+            console.log("weiAmount = " + weiAmount + ", tokenAmount = " + tokenAmount);
+
+            // buyer3 is in the whitelist but not the early list
+            await presaleContract.buyTokens({ value: weiAmount, from: buyer3}).then((result) => { 
+                LogEvents(result);
+             });
+             assert.isOk(false, 'Buy while not on early list should have failed, but did not');
+
         } catch (error) {
-            console.log(error);               
+            //console.log(error);  
+            assert.isOk(true, 'Buy while not on early list failed as intended');            
         }
     });
 
     it('buys tokens', async function(){
-        const weiAmount = 1 * 1000000000000000000;
+        const weiAmount = 2 * 1000000000000000000;
         try {
             const tokenAmount = (await presaleContract.calcTokens.call(weiAmount)).toNumber();
             console.log("tokenAmount = " + tokenAmount);
@@ -130,10 +136,7 @@ contract('PeblikPresale', function(accounts) {
             const walletExpected = (await web3.eth.getBalance(wallet1)).toNumber();
 
             await presaleContract.buyTokens({ value: weiAmount, from: buyer2}).then((result) => { 
-                for (var i = 0; i < result.logs.length; i++) {
-                    var log = result.logs[i];
-                    RecordLog(log);
-                }
+                LogEvents(result);
              });
 
             // check that the buyer got the right amount of tokens
@@ -157,7 +160,7 @@ contract('PeblikPresale', function(accounts) {
     });
 
     it('buys more tokens', async function(){
-        const weiAmount = 1 * 1000000000000000000;
+        const weiAmount = 4 * 1000000000000000000;
         try {
             const tokenAmount = (await presaleContract.calcTokens.call(weiAmount)).toNumber();
             console.log("tokenAmount = " + tokenAmount);
@@ -169,10 +172,7 @@ contract('PeblikPresale', function(accounts) {
             const walletExpected = (await web3.eth.getBalance(wallet1)).toNumber();
 
             await presaleContract.buyTokens({ value: weiAmount, from: buyer2}).then((result) => { 
-                for (var i = 0; i < result.logs.length; i++) {
-                    var log = result.logs[i];
-                    RecordLog(log);
-                }
+                LogEvents(result);
              });
 
             // check that the buyer got the right amount of tokens
@@ -196,7 +196,7 @@ contract('PeblikPresale', function(accounts) {
     });
  
     it('makes external purchase', async function() {
-        const centsAmount = 12000;
+        const centsAmount = 24000;
         try {
             const source = await presaleContract.paymentSource.call();
             assert.equal(source, pmtSrc, 'makes external purchase - Payment Source Failed');
@@ -210,10 +210,7 @@ contract('PeblikPresale', function(accounts) {
             const buyerExpected = (await tokenContract.balanceOf(buyer1)).toNumber();
             
             await presaleContract.externalPurchase(buyer1, centsAmount, {from: pmtSrc}).then((result) => {              
-                for (var i = 0; i < result.logs.length; i++) {
-                    var log = result.logs[i];
-                    RecordLog(log);
-                }
+                LogEvents(result);
              });
 
             // check that the buyer got the right amount of tokens
@@ -226,6 +223,61 @@ contract('PeblikPresale', function(accounts) {
 
         } catch (error) {
             console.log(error);               
+        }
+    });
+
+    it('buy fails because less than the min amount', async function(){ 
+        try {
+            const minCents = await presaleContract.minCents();
+            const minWei = new web3.BigNumber(await presaleContract.minWei());
+            const weiAmount = new web3.BigNumber(minWei.toNumber() - 10);
+            console.log("minCents = " + minCents + ", minWei = " + minWei.toNumber() + ", weiAmount = " + weiAmount.toNumber());
+
+            await presaleContract.buyTokens({ value: weiAmount.toNumber(), from: buyer2}).then((result) => { 
+                LogEvents(result);
+             });
+
+            assert.isOk(false, 'Buy below minWei should have failed, but did not');
+
+        } catch (error) {
+            //console.log(error);  
+            assert.isOk(true, 'Buy below minWei failed as intended');            
+        }
+    });
+
+    it('buy fails because more than the max amount', async function(){
+        try {
+            const maxCents = await presaleContract.maxCents();
+            const maxWei = new web3.BigNumber(await presaleContract.maxWei());
+            const weiAmount = new web3.BigNumber(maxWei.toNumber() + 1);
+            console.log("maxCents = " + maxCents + ", maxWei = " + maxWei + ", weiAmount = " + weiAmount);
+
+            await presaleContract.buyTokens({ value: weiAmount.toNumber(), from: buyer2}).then((result) => { 
+                LogEvents(result);
+             });
+             assert.isOk(false, 'Buy above maxWei should have failed, but did not');
+
+        } catch (error) {
+            //console.log(error);  
+            assert.isOk(true, 'Buy above maxWei failed as intended');            
+        }
+    });
+
+    it('buy fails because multiple buys exceed max', async function(){
+        try {
+            const maxCents = await presaleContract.maxCents();
+            const maxWei = await presaleContract.maxWei();
+            const weiAmount = new web3.BigNumber(19 * 1000000000000000000); // 19 eth
+            console.log("maxCents = " + maxCents + ", maxWei = " + maxWei + ", weiAmount = " + weiAmount);
+
+            await presaleContract.buyTokens({ value: weiAmount, from: buyer2}).then((result) => { 
+                LogEvents(result);
+             });
+             assert.isOk(false, 'Buy above maxWei should have failed, but did not');
+
+        } catch (error) {
+            //console.log(error);  
+            assert.isOk(true, 'Buy above maxWei failed as intended');            
         }
     });
 
@@ -264,19 +316,15 @@ contract('PeblikPresale', function(accounts) {
     })
 
     it('changes token price', async function() {
-
-        const _value = 0;
-        const _centsRaised = 0;
         const _tokensSold = 0;
-
         try {
-            const currentPrice = await presaleContract.getCurrentPrice(_tokensSold);
+            const currentPrice = (await presaleContract.getCurrentPrice(_tokensSold)).toNumber();
             console.log("currentPrice: " + currentPrice);
 
-            const expectedPrice = currentPrice + 5;
+            const expectedPrice = currentPrice + 5; // goes from 15 to 20
             const changeSuccess = await presaleContract.changePrice(expectedPrice);
+            const newPrice = (await presaleContract.getCurrentPrice(_tokensSold)).toNumber();
 
-            const newPrice = await presaleContract.getCurrentPrice(_tokensSold);
             assert.equal(newPrice, expectedPrice, 'Price Changed Failed');
         } catch (error) {
             console.log(error);
@@ -290,6 +338,23 @@ contract('PeblikPresale', function(accounts) {
             assert.equal(isPaused, true, 'Presale was not paused correctly');                
         } catch (error) {
             console.log(error);           
+        }
+    });
+
+    it('cannot buy when paused', async function(){
+        try {
+            const isPaused = await presaleContract.paused();
+            const weiAmount = new web3.BigNumber(1 * 1000000000000000000); // 1 eth
+            console.log("isPaused = " + isPaused + ", weiAmount = " + weiAmount);
+
+            await presaleContract.buyTokens({ value: weiAmount, from: buyer2}).then((result) => { 
+                LogEvents(result);
+             });
+             assert.isOk(false, 'Buy while paused should have failed, but did not');
+
+        } catch (error) {
+            //console.log(error);  
+            assert.isOk(true, 'Buy while paused failed as intended');            
         }
     });
     
@@ -309,10 +374,7 @@ contract('PeblikPresale', function(accounts) {
             var conversionRate = await presaleContract.centsPerEth.call();
             
             await presaleContract.changeConversionRate(newRate).then((result) => { 
-                for (var i = 0; i < result.logs.length; i++) {
-                    var log = result.logs[i];
-                    RecordLog(log);
-                }
+                LogEvents(result);
             });
 
             const changedRate = await presaleContract.centsPerEth.call();
@@ -326,10 +388,7 @@ contract('PeblikPresale', function(accounts) {
         try {
                       
             await presaleContract.changeWallet(wallet2).then((result) => { 
-                for (var i = 0; i < result.logs.length; i++) {
-                    var log = result.logs[i];
-                    RecordLog(log);
-                }
+                LogEvents(result);
             });
 
             assert.equal(true, true, 'change Wallet Failed');                
@@ -353,10 +412,7 @@ contract('PeblikPresale', function(accounts) {
             const walletOldExpected = (await web3.eth.getBalance(wallet1)).toNumber();
 
             await presaleContract.buyTokens({ value: weiAmount, from: buyer2}).then((result) => { 
-                for (var i = 0; i < result.logs.length; i++) {
-                    var log = result.logs[i];
-                    RecordLog(log);
-                }
+                LogEvents(result);
              });
 
             // check that the buyer got the right amount of tokens
@@ -384,13 +440,10 @@ contract('PeblikPresale', function(accounts) {
     it('change Start Time', async function() {
         try {
             var startTime = await presaleContract.startTime();
-            const newTime = startTime.toNumber() + 1;
+            const newTime = startTime.toNumber() - 1;
 
             await presaleContract.changeStartTime(newTime).then((result) => { 
-                for (var i = 0; i < result.logs.length; i++) {
-                    var log = result.logs[i];
-                    RecordLog(log);
-                }
+                LogEvents(result);
              });
 
             startTime = await presaleContract.startTime();
@@ -400,16 +453,35 @@ contract('PeblikPresale', function(accounts) {
         }
     });
 
+    it('checks for early time', async function() {
+        try {
+            var earlyTime = await presaleContract.earlyTime();
+            console.log("earlyTime = " + earlyTime);
+
+            var now = Date.now();
+            console.log("      now = " + Math.floor(now/1000));
+
+            var startTime = await presaleContract.startTime();
+            console.log("startTime = " + startTime);
+
+            var isEarly = await presaleContract.isEarly();
+            assert.equal(isEarly, true, 'Should be in earlybird phase');
+
+            // early bird was only set up to last 10 seconds, so wait 11
+            await sleep(11000);
+
+        } catch (error) {
+            console.log(error);                
+        }
+    })
+
     it('change End Time', async function() {
         try {
             var endTime = await presaleContract.endTime();
             const newTime = endTime.toNumber() + 1;
 
             await presaleContract.changeEndTime(newTime).then((result) => { 
-                for (var i = 0; i < result.logs.length; i++) {
-                    var log = result.logs[i];
-                    RecordLog(log);
-                }
+                LogEvents(result);
             });
 
             endTime = await presaleContract.endTime();
@@ -419,22 +491,70 @@ contract('PeblikPresale', function(accounts) {
         }
     });
 
-    it('Early Test', async function() {
+    it('checks that early phase has passed', async function() {
         try {
-            var isEarly = await presaleContract.isEarly();
-            assert.equal(isEarly, true, 'Should be in earlybird phase');
-            await sleep(15000);
-            isEarly = await presaleContract.isEarly();
-            assert.equal(isEarly, false, 'Early bird phase should be over now');                
+            now = Date.now();
+            console.log("  new now = " + Math.floor(now/1000));
+
+            var isStillEarly = await presaleContract.isEarly();
+            assert.equal(isStillEarly, false, 'Early bird phase should be over now');     
+
         } catch (error) {
             console.log(error);                
         }
-    })
+    });
+
+    it('buys more to hit the cap', async function(){
+        const weiAmount = 14 * 1000000000000000000;
+        try {
+            const tokenAmount = (await presaleContract.calcTokens.call(weiAmount)).toNumber();
+            console.log("tokenAmount = " + tokenAmount);
+
+            const totalExpected = (await tokenContract.totalSupply()).toNumber();
+            console.log("totalExpected = " + totalExpected);
+            const buyerExpected = (await tokenContract.balanceOf(buyer3)).toNumber();
+            const walletExpected = (await web3.eth.getBalance(wallet2)).toNumber();
+
+            await presaleContract.buyTokens({ value: weiAmount, from: buyer3}).then((result) => { 
+                LogEvents(result);
+             });
+
+            // check that the buyer got the right amount of tokens
+            const buyerBal = (await tokenContract.balanceOf(buyer3)).toNumber();
+            console.log("buyerBal = " + buyerBal);
+            // check that tokensSold, totalSupply and availableSupply have been updated
+            const totalSupply = (await tokenContract.totalSupply()).toNumber();
+            console.log("totalSupply = " + totalSupply);
+            // check that wei was transferred to correct wallet address
+            const walletBal = (await web3.eth.getBalance(wallet2)).toNumber();
+            console.log("walletBal = " + walletBal);
+
+            const tokensSold = (await presaleContract.tokensSold()).toNumber();
+            const tokenCap = (await presaleContract.tokenCap()).toNumber();
+            var isCapReached = await presaleContract.capReached();
+            console.log("tokensSold = " + tokensSold + ", cap = " + tokenCap + ", capReached = " + isCapReached);
+            
+            assert.equal(walletBal, walletExpected + weiAmount, 'Wallet balance did not increase correctly');  
+            assert.equal(buyerBal, buyerExpected + tokenAmount, 'Balance did not increase correctly');
+            assert.equal(totalSupply, (totalExpected + tokenAmount), 'Total supply did not increase correctly'); 
+            assert.isOk(isCapReached, 'Cap was not reached as intended');
+
+        } catch (error) {
+            console.log(error);              
+        }
+    });
 
     function sleep(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
-      
+    
+    function LogEvents(result) {
+        for (var i = 0; i < result.logs.length; i++) {
+            var log = result.logs[i];
+            RecordLog(log);
+        }
+    }
+
     function RecordLog(log) {
         switch (log.event) {
             case "TokensBought": {
