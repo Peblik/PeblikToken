@@ -216,9 +216,13 @@ contract('PeblikTokenSale', function(accounts) {
 
             console.log("newTokensSold = " + newTokensSold);
             console.log("newPrice = " + newPrice);
-
+            var additionTokens = tokenAmount / weiPerEth;
+            var expectedTokens = parseInt(tokensSold) + parseInt(additionTokens);
+            //console.log("additionTokens = " + additionTokens);
+            //console.log("expectedTokens = " + expectedTokens);
+         
             assert.isAbove(newPrice, dollarPrice, 'Price should have increased'); 
-            assert.equal(newTokensSold, tokensSold + (tokenAmount / weiPerEth), 'Tokens sold did not update correctly');  
+            assert.equal(newTokensSold, expectedTokens, 'Tokens sold did not update correctly');  
 
         } catch (error) {
             console.log(error);   
@@ -285,6 +289,9 @@ contract('PeblikTokenSale', function(accounts) {
             const totalExpected = (await tokenContract.totalSupply()).toNumber();
             const buyerExpected = (await tokenContract.balanceOf(buyer4)).toNumber();
 
+            console.log("tokenAmount= " + tokenAmount);
+            console.log("totalExpected= " + totalExpected);
+
             await tokenSaleContract.externalPurchase(buyer4, centsAmount, {from: pmtSrc}).then((result) => {              
                 for (var i = 0; i < result.logs.length; i++) {
                     var log = result.logs[i];
@@ -293,12 +300,15 @@ contract('PeblikTokenSale', function(accounts) {
             });
 
             // check that the buyer got the right amount of tokens
-            const buyerBal = (await tokenContract.balanceOf(buyer4)).toNumber();
+            const buyerBal = (await tokenContract.balanceOf(buyer4));
             // check that tokensSold, totalSupply and availableSupply have been updated
-            const totalSupply = (await tokenContract.totalSupply()).toNumber();
+            const totalSupply = (await tokenContract.totalSupply());
 
-            assert.equal(totalSupply, totalExpected + tokenAmount, 'Total supply did not increase correctly'); 
-            assert.equal(buyerBal, buyerExpected + tokenAmount, 'Balance did not increase correctly');
+            console.log("totalSupply= " + totalSupply);
+
+
+            assert.equal(totalSupply.toNumber(), totalExpected + tokenAmount, 'Total supply did not increase correctly'); 
+            assert.equal(buyerBal.toNumber(), buyerExpected + tokenAmount, 'Balance did not increase correctly');
 
         } catch (error) {
             console.log(error);               
@@ -662,11 +672,14 @@ contract('PeblikTokenSale', function(accounts) {
                 console.log("Event:" + " " + log.event +": oldSource " + log.args.oldSource + " newSource " + log.args.newSource);
                 break;
             }        
+            case "PriceLevelsChanged": {
+                console.log("Event:" + " " + log.event +": numLevelsAdded " + log.args.numLevelsAdded);
+                break;
+            }        
             case "SaleComplete": {
                 console.log("Event:" + " " + log.event +": totalSupply " + log.args.totalSupply.toNumber());
                 break;
-            }        
-            default: {
+            }default: {
                 //console.log(log.event);
                 console.log(log);
                 break;
