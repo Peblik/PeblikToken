@@ -42,7 +42,7 @@ contract PeblikToken is TransferableToken, MintableToken {
     /* After the original future allocation has all been issued, if new assets are acquired for the underlying pool, 
      * the future allocation pool may be increased (and possibly issued to the public), as long as the value of the new 
      * underlying assets exceeds the market value of the new supply. */
-    function addPublicReserve(uint256 _publicSupply) public onlyOwner {
+    function addPublicReserve(uint256 _publicSupply) public onlyOwner whenTransferable {
         require(_publicSupply > 0);
         require(availableSupply >= _publicSupply);
 
@@ -57,7 +57,7 @@ contract PeblikToken is TransferableToken, MintableToken {
      * @param _drawAmount Amount of tokens to pull from the reserve into available token supply.
      */
      /*onlyOwner*/
-    function drawFromPublicReserve(uint256 _drawAmount) public { 
+    function drawFromPublicReserve(uint256 _drawAmount) public onlyOwner whenTransferable { 
         require(_drawAmount > 0);
         require(publicReserve >= _drawAmount);
 
@@ -69,7 +69,7 @@ contract PeblikToken is TransferableToken, MintableToken {
     /* @dev After the original resource allocation has all been issued, if new assets are acquired for the underlying pool, 
      * the resource acquisition reserve may be increased, as long as the value of the new 
      * underlying assets exceeds the market value of the new supply. */
-    function addResourceReserve(uint256 _resourceSupply) public onlyOwner {
+    function addResourceReserve(uint256 _resourceSupply) public onlyOwner whenTransferable {
         require(_resourceSupply > 0);
         require(availableSupply >= _resourceSupply);
 
@@ -83,7 +83,7 @@ contract PeblikToken is TransferableToken, MintableToken {
      *
      * @param _drawAmount Amount of tokens to pull from the reserve into available token supply.
      */
-    function drawFromResourceReserve(uint256 _drawAmount) public onlyOwner {
+    function drawFromResourceReserve(uint256 _drawAmount) public onlyOwner whenTransferable {
         require(_drawAmount > 0);
         require(resourceReserve >= _drawAmount);
 
@@ -98,8 +98,9 @@ contract PeblikToken is TransferableToken, MintableToken {
     * @param _amount The amount of tokens to mint.
     * @return A boolean that indicates if the operation was successful.
     */
-    function mint(address _to, uint256 _amount) onlyOwnerOrController canMint whenNotPaused public returns (bool) { 
-        if (totalSupply_.add(_amount) > availableSupply) {
+    function mint(address _to, uint256 _amount) onlyOwnerOrController canMint public returns (bool) { 
+        if (_amount >= availableSupply) 
+        {
             return false;
         }
 
@@ -109,7 +110,7 @@ contract PeblikToken is TransferableToken, MintableToken {
 
         Mint(_to, _amount);
         Transfer(address(0), _to, _amount);
-        return true; 
+        return true;
     }
 
     /**
@@ -131,7 +132,7 @@ contract PeblikToken is TransferableToken, MintableToken {
         _;
     }
 
-        /**
+    /**
      * @dev Throws if called by any account other than the controller.
      */
     modifier onlyController() {

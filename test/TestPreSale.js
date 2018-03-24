@@ -209,7 +209,7 @@ contract('PeblikPresale', function(accounts) {
             const totalExpected = (await tokenContract.totalSupply()).toNumber();
             const buyerExpected = (await tokenContract.balanceOf(buyer1)).toNumber();
             
-            await presaleContract.externalPurchase(buyer1, centsAmount, {from: pmtSrc}).then((result) => {              
+            await presaleContract.externalPurchase(centsAmount, buyer1, {from: pmtSrc}).then((result) => {              
                 LogEvents(result);
              });
 

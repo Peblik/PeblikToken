@@ -287,7 +287,7 @@ contract('PeblikTokenSale', function(accounts) {
             console.log("tokenAmount= " + tokenAmount);
             console.log("totalExpected= " + totalExpected);
 
-            await tokenSaleContract.externalPurchase(buyer4, centsAmount, {from: pmtSrc}).then((result) => {              
+            await tokenSaleContract.externalPurchase(centsAmount, buyer4, {from: pmtSrc}).then((result) => {              
                 LogEvents(result);
             });
 

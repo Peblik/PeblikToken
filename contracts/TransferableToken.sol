@@ -33,16 +33,6 @@ contract TransferableToken is PausableToken {
         Transferable();
     }
 
-    /**
-    * @dev Called by the owner to temporarily prevent token transfers.
-    * NOTE: FOR TESTING ONLY. WE WILL REMOVE THIS FUNCTION FROM THE FINAL CODE, SO ONCE THE 
-    * TOKEN IS TRANSFERABLE, IT CANNOT BE CHANGED BACK.
-    */
-    function setNonTransferable() onlyOwner whenTransferable public {
-        transferable = false;
-        NonTransferable();
-    }
-
     // Override standard transfer functions
 
     function transfer(address _to, uint256 _value) public whenTransferable returns (bool) {

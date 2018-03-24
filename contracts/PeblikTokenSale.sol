@@ -65,8 +65,7 @@ contract PeblikTokenSale is BaseTokenSale {
      * @dev Override to mint tokens for post-sale allocations.
      */
     function completeSale () public onlyOwner {
-        require(capReached || now > endTime); 
-        saleComplete = true;
+        super.completeSale();
 
         // allocate and transfer all allocations to other wallets
         token.mint(employeePoolWallet, employeePoolAmount);

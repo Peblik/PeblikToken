@@ -130,11 +130,11 @@ contract BaseTokenSale is Pausable {
     }
 
     function changeMinMax(uint256 _min, uint256 _max) internal {
-        minCents = _min;
-        maxCents = _max;
+        minCents = _min.mul(1 ether);
+        maxCents = _max.mul(1 ether);
 
-        minWei = _min.mul(1 ether).div(centsPerEth);
-        maxWei = _max.mul(1 ether).div(centsPerEth);
+        minWei = minCents.div(centsPerEth);
+        maxWei = maxCents.div(centsPerEth);
     }
 
     /**
@@ -151,14 +151,13 @@ contract BaseTokenSale is Pausable {
         require(validPurchase(msg.sender));
         
         uint256 weiAmount = msg.value;
-        uint256 centsAmount = weiAmount.mul(centsPerEth).div(1 ether);
-        //uint256 tokens = centsAmount.div(price).mul(10 ** token.decimals());
+        // get cents amount (plus 18 decimal digits)
+        uint256 exactCents = weiAmount.mul(centsPerEth);
 
-        if (!buyWithCents(msg.sender, centsAmount)) {
+        if (!buyWithCents(exactCents, msg.sender)) {
             revert();
         }
-
-        centsRaised = centsRaised.add(centsAmount);
+       // only track the wei received directly by this contract
         weiRaised = weiRaised.add(weiAmount);
 
         // send out the funds
@@ -167,18 +166,17 @@ contract BaseTokenSale is Pausable {
 
     /**
     * @dev Allows transfer of tokens to a recipient who has purchased offline,for dollars (or other currencies converted to dollars).
-    * @param _buyer The address of the recipient of the tokens
     * @param _centsAmount The purchase amount in cents (dollars * 100, with no decimal place)
+    * @param _buyer The address of the recipient of the tokens
     * @return bool Returns true if executed successfully.
     */
-    function externalPurchase (address _buyer, uint256 _centsAmount) whenNotPaused external returns (bool) {
+    function externalPurchase (uint256 _centsAmount, address _buyer) whenNotPaused external returns (bool) {
         require(_buyer != 0x0);
         require(validPurchase(_buyer));
         require(msg.sender == paymentSource); // transaction must come from pre-approved address
-        // TEST
-        ExternalPurchase(_buyer, msg.sender, _centsAmount);
 
-        bool success = buyWithCents(_buyer, _centsAmount);
+        uint256 exactCents = _centsAmount * (1 ether);
+        bool success = buyWithCents(exactCents, _buyer);
 
         if (success) {
             ExternalPurchase(_buyer, msg.sender, _centsAmount);
@@ -187,56 +185,39 @@ contract BaseTokenSale is Pausable {
         return success;
     }
 
-    function buyWithCents(address _buyer, uint256 _centsAmount) internal returns (bool success) {
+    function buyWithCents(uint256 _exactCents, address _buyer) internal returns (bool success) {
+        
         // check purchase history
-        uint256 totalAmount = _centsAmount;
-        uint256 newBuyer = 0;
+        uint256 totalAmount = _exactCents.add(totalPurchase[_buyer]);
 
-        if (totalPurchase[_buyer] != 0) {
-            totalAmount = totalAmount.add(_centsAmount);
-            newBuyer = 1;
-        }
-
-        if (_centsAmount < minCents) {
-            // single purchase must meet the minimum
-            PurchaseError("Below minimum purchase amount.", _buyer);
-            revert();
-        } else if (totalAmount > maxCents) {
-            // total of all purchases by a single buyer during the sale cannot exceed the max
-            PurchaseError("Above maximum purchase amount.", _buyer);
-            revert();
+        if (_exactCents < minCents || totalAmount > maxCents) {
+            // single purchase must meet the minimum, and total of all purchases 
+            // by a single buyer cannot exceed the max
+            return false;
         }
 
         uint256 currentPrice = getCurrentPrice(tokensSold);
         // TEST
         LogPrice(tokensSold, currentPrice);
 
-        // Price should never be zero, but just in case.
-        /*if (currentPrice == 0) {
-            PurchaseError("Price is zero.", _buyer);
-            return false;
-        }*/
-
-        // Convert to a token amount with decimals.
-        // Note that this assumes that the token has 18 decimal places (as ours does).
-        //uint256 temp = _centsAmount.div(price);
-        //uint256 tokens = temp.mul(1 ether);
-        
-        uint256 tokens = _centsAmount.mul(1 ether).div(currentPrice);
+        uint256 tokens = _exactCents.div(currentPrice);
         
         // mint tokens as we go
-        token.mint(_buyer, tokens);
+        if (!token.mint(_buyer, tokens))
+        {
+            return false;
+        }
 
         // update this buyer's purchase total
         totalPurchase[_buyer] = totalAmount;
 
-        // update presale stats
-        centsRaised = centsRaised.add(_centsAmount);
+        // update sale stats
+        centsRaised = centsRaised.add(_exactCents.div(1 ether));
         tokensSold = tokensSold.add(tokens.div(1 ether));
 
-        TokensBought(msg.sender, _buyer, _centsAmount, tokens, centsRaised, tokensSold);
+        TokensBought(msg.sender, _buyer, _exactCents, tokens, centsRaised, tokensSold);
 
-        // Finalize the PartnerSale if necessary
+        // Record that the sale cap has been reached, if applicable
         if (tokensSold >= tokenCap) {
             capReached = true;
             CapReached(tokenCap, tokensSold);
@@ -261,7 +242,9 @@ contract BaseTokenSale is Pausable {
     * Shut down the sale. No purchases can be accepted after this is done.
     */
     function completeSale () public onlyOwner {
+        require(!saleComplete); 
         require(capReached || now > endTime); 
+
         saleComplete = true;
     }
 
