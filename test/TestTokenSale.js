@@ -181,24 +181,27 @@ contract('PeblikTokenSale', function(accounts) {
     it('buys tokens at phase 2 price', async function(){
         const ethAmount = 2;
         try {
-            const tokensSold = (await tokenSaleContract.tokensSold()).toNumber();
-            console.log("Tokens Sold: " + tokensSold + ", Cap: " + tokenCap);
-            const dollarPrice = (await tokenSaleContract.getCurrentPrice.call(tokensSold));
+            const tokensSold = await tokenSaleContract.tokensSold();
+            console.log("Tokens Sold: " + tokensSold.toNumber() + ", Cap: " + tokenCap);
+            const dollarPrice = (await tokenSaleContract.getCurrentPrice.call(tokensSold.toNumber()));
             const centsPerEth = (await tokenSaleContract.centsPerEth());
             console.log("ethAmount: " + ethAmount + ", Price: " + dollarPrice + ", centsPerEth: " + centsPerEth);
             const weiAmount = new web3.BigNumber(ethAmount * weiPerEth);
-            const tokenAmount = (await tokenSaleContract.calcTokens.call(weiAmount)).toNumber();
-            
+            const tokenAmount = await tokenSaleContract.calcTokens.call(weiAmount);
+            console.log("tokenAmount: " + tokenAmount.toNumber());
+            var amt = parseInt(web3.fromWei(tokensSold, "ether")) + parseInt(web3.fromWei(tokenAmount, "ether"));
+            console.log("tokensSold + tokenAmount: " + amt);
             //const tokenConfirmation = new web3.BigNumber(weiAmount.toNumber() * (centsPerEth / dollarPrice));
             //console.log("tokenAmount = " + tokenAmount + ", confirmation = " + tokenConfirmation);
 
             await tokenSaleContract.buyTokens({ value: weiAmount.toNumber(), from: buyer4}).then((result) => { 
                 LogEvents(result);
              });
-
-            var newTokensSold = (await tokenSaleContract.tokensSold()).toNumber();
-            var expectedTokensSold = new web3.BigNumber(tokenAmount / weiPerEth).toNumber() + tokensSold;
-            var newPrice = await tokenSaleContract.getCurrentPrice.call(newTokensSold);
+            var newTokens = await tokenSaleContract.tokensSold();
+            var newTokensSold = parseInt(web3.fromWei(newTokens, "ether"));
+            var expectedTokensSold = parseInt(web3.fromWei(tokensSold, "ether")) + parseInt(web3.fromWei(tokenAmount, "ether"));
+            //var expectedTokensSold = new web3.BigNumber(tokenAmount / weiPerEth).toNumber() + tokensSold;
+            var newPrice = await tokenSaleContract.getCurrentPrice.call(newTokens.toNumber());
 
             console.log("newTokensSold = " + newTokensSold);
             console.log("newPrice = " + newPrice);
@@ -331,7 +334,7 @@ contract('PeblikTokenSale', function(accounts) {
 
         const _value = 0;
         const _centsRaised = 0;
-        const _tokensSold = 110000;
+        const _tokensSold = (110000 * 1000000000000000000);
         const thresholds = [0,55000,105000,155000];
         const prices = [30,40,55,60];
         const expectedPrice = 55;

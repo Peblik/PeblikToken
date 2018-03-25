@@ -157,6 +157,113 @@ contract('PeblikToken', function(accounts) {
         }
     });
 
+    it('transfer Ownership', async function(){
+        try {
+            var ownerAddr = await tokenContract.owner.call();
+            assert.equal(ownerAddr, owner1, 'transfer Ownership - owers does not match');
+            await tokenContract.transferOwnership(owner2).then((result) => { // not the real contract address -- just for testing
+                //console.log(result);
+                for (var i = 0; i < result.logs.length; i++) {
+                    var log = result.logs[i];
+                    //console.log(log);
+                    RecordLog(log);
+                }
+                //utils.assertEvent(presaleContract, { event: "Mint", logIndex: 0, args: { to: buyer1, amount: 1000000000000000000 }})
+             });                    
+             ownerAddr = await tokenContract.owner.call();
+             assert.equal(ownerAddr, owner1, 'transfer Ownership - owers does not match');
+            } catch (error) {
+            console.log(error);
+        }
+    });
+
+    it('accept Ownership', async function(){
+        try {
+            var ownerAddr = await tokenContract.owner.call();
+            assert.equal(ownerAddr, owner1, 'accept Ownership - owers does not match');
+            await tokenContract.acceptOwnership({from: owner2}).then((result) => { // not the real contract address -- just for testing
+                //console.log(result);
+                for (var i = 0; i < result.logs.length; i++) {
+                    var log = result.logs[i];
+                    //console.log(log);
+                    RecordLog(log);
+                }
+                //utils.assertEvent(presaleContract, { event: "Mint", logIndex: 0, args: { to: buyer1, amount: 1000000000000000000 }})
+             });                    
+             ownerAddr = await tokenContract.owner.call();
+             assert.equal(ownerAddr, owner2, 'accept Ownership - owers does not match');
+            } catch (error) {
+            console.log(error);
+        }
+    });
+
+    it('transfer Ownership Fail', async function(){
+        try {
+            var ownerAddr = await tokenContract.owner.call();
+            assert.equal(ownerAddr, owner2, 'transfer Ownership Fail - owers does not match');
+            try {
+                await tokenContract.transferOwnership(owner1).then((result) => { // not the real contract address -- just for testing
+                    //console.log(result);
+                    for (var i = 0; i < result.logs.length; i++) {
+                        var log = result.logs[i];
+                        //console.log(log);
+                        RecordLog(log);
+                    }
+                    //utils.assertEvent(presaleContract, { event: "Mint", logIndex: 0, args: { to: buyer1, amount: 1000000000000000000 }})
+                 });               
+            } catch (error) {
+                console.log("transfer Ownership Fail - Transfer Failed");
+            }
+                    
+             ownerAddr = await tokenContract.owner.call();
+             assert.equal(ownerAddr, owner2, 'transfer Ownership Fail - owers does not match');
+            } catch (error) {
+            console.log(error);
+        }
+    });
+
+    it('transfer Ownership back', async function(){
+        try {
+            var ownerAddr = await tokenContract.owner.call();
+            assert.equal(ownerAddr, owner2, 'transfer Ownership back- owers does not match');
+            await tokenContract.transferOwnership(owner1, {from: owner2}).then((result) => { // not the real contract address -- just for testing
+                //console.log(result);
+                for (var i = 0; i < result.logs.length; i++) {
+                    var log = result.logs[i];
+                    //console.log(log);
+                    RecordLog(log);
+                }
+                //utils.assertEvent(presaleContract, { event: "Mint", logIndex: 0, args: { to: buyer1, amount: 1000000000000000000 }})
+             });               
+
+                    
+             ownerAddr = await tokenContract.owner.call();
+             assert.equal(ownerAddr, owner2, 'transfer Ownership back - owers does not match');
+            } catch (error) {
+            console.log(error);
+        }
+    });
+
+    it('accept Ownership back', async function(){
+        try {
+            var ownerAddr = await tokenContract.owner.call();
+            assert.equal(ownerAddr, owner2, 'accept Ownership back - owers does not match');
+            await tokenContract.acceptOwnership({from: owner1}).then((result) => { // not the real contract address -- just for testing
+                //console.log(result);
+                for (var i = 0; i < result.logs.length; i++) {
+                    var log = result.logs[i];
+                    //console.log(log);
+                    RecordLog(log);
+                }
+                //utils.assertEvent(presaleContract, { event: "Mint", logIndex: 0, args: { to: buyer1, amount: 1000000000000000000 }})
+             });                    
+             ownerAddr = await tokenContract.owner.call();
+             assert.equal(ownerAddr, owner1, 'accept Ownership back - owers does not match');
+            } catch (error) {
+            console.log(error);
+        }
+    });
+
     function sleep(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }

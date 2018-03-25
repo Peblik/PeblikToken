@@ -154,7 +154,7 @@ contract PeblikTokenSale is BaseTokenSale {
             // Find the highest threshold that's been passed.
             // Note that this should always succeed for level[0], since that threshold should always be zero.
             if (_tokensSold >= levels[index].threshold) {
-                break;
+                return levels[index].dollarPrice;
             }
         }
         return levels[index].dollarPrice;

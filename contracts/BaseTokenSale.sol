@@ -366,7 +366,8 @@ contract BaseTokenSale is Pausable {
     
     function calcTokens(uint256 weiAmount) public view returns (uint256 value) {
         uint256 currentPrice = getCurrentPrice(tokensSold);
-        return weiAmount.mul(centsPerEth).div(currentPrice);
+        uint256 exactCents = weiAmount.mul(centsPerEth);
+        return exactCents.div(currentPrice);
     }
     
     function calcCentsToTokens(uint256 centsAmount) public view returns (uint256 value) {
