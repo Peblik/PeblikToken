@@ -55,7 +55,7 @@ contract PeblikToken is MintableToken {
      *
      * @param _drawAmount Amount of tokens to pull from the reserve into available token supply (includes 18 decimals)
      */
-    function drawFromPublicReserve(uint256 _drawAmount) public onlyOwner { 
+    function drawFromPublicReserve(uint256 _drawAmount) public onlyOwnerOrController { //onlyOwner
         require(_drawAmount > 0);
         require(publicReserve >= _drawAmount);
 
@@ -97,7 +97,7 @@ contract PeblikToken is MintableToken {
     * @param _amount The amount of tokens to mint.
     * @return A boolean that indicates if the operation was successful.
     */
-    function mint(address _to, uint256 _amount) onlyOwnerOrController canMint public returns (bool) { 
+    function mint(address _to, uint256 _amount) public onlyOwnerOrController canMint returns (bool) {
         if (_amount >= availableSupply) 
         {
             return false;

@@ -508,12 +508,12 @@ contract('PeblikPresale', function(accounts) {
         const weiAmount = 14 * 1000000000000000000;
         try {
             const tokenAmount = (await presaleContract.calcTokens.call(weiAmount)).toNumber();
-            console.log("tokenAmount = " + tokenAmount);
 
             const totalExpected = (await tokenContract.totalSupply()).toNumber();
-            console.log("totalExpected = " + totalExpected);
             const buyerExpected = (await tokenContract.balanceOf(buyer3)).toNumber();
             const walletExpected = (await web3.eth.getBalance(wallet2)).toNumber();
+            console.log("tokenAmount = " + tokenAmount);
+            console.log("totalExpected = " + totalExpected);
 
             await presaleContract.buyTokens({ value: weiAmount, from: buyer3}).then((result) => { 
                 LogEvents(result);
@@ -521,12 +521,12 @@ contract('PeblikPresale', function(accounts) {
 
             // check that the buyer got the right amount of tokens
             const buyerBal = (await tokenContract.balanceOf(buyer3)).toNumber();
-            console.log("buyerBal = " + buyerBal);
             // check that tokensSold, totalSupply and availableSupply have been updated
             const totalSupply = (await tokenContract.totalSupply()).toNumber();
-            console.log("totalSupply = " + totalSupply);
             // check that wei was transferred to correct wallet address
             const walletBal = (await web3.eth.getBalance(wallet2)).toNumber();
+            console.log("buyerBal = " + buyerBal);
+            console.log("totalSupply = " + totalSupply);
             console.log("walletBal = " + walletBal);
 
             const tokensSold = (await presaleContract.tokensSold()).toNumber();
