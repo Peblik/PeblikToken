@@ -83,7 +83,7 @@ contract PeblikToken is MintableToken {
      *
      * @param _drawAmount Amount of tokens to pull from the reserve into available token supply.
      */
-    function drawFromResourceReserve(uint256 _drawAmount) public onlyOwner whenTransferable {
+    function drawFromResourceReserve(uint256 _drawAmount) public onlyOwnerOrController whenTransferable { 
         require(_drawAmount > 0);
         require(resourceReserve >= _drawAmount);
 
