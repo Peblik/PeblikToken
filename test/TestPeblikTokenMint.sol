@@ -35,31 +35,6 @@ contract TestPeblikTokenMint {
     Assert.equal(token.totalSupply()/1e18, totalExpected, "totalSupply should be +50 tokens");
   }
 
-  function testPause() public {
-    token.pause();
-    Assert.equal(token.paused(), true, "Token should be paused");
-  }
-/*
-  function testMintWhilePaused() public {
-    address beneficiary = address(0xf17f52151EbEF6C7334FAD080c5704D77216b732);
-
-    uint mintAmt = 50e18;
-
-    uint256 balanceExpected = token.balanceOf(beneficiary);
-    uint256 totalExpected = token.totalSupply();
-
-    // the following should throw because we're paused
-    token.mint(beneficiary, mintAmt); //50e18, or 50 full tokens
-
-    Assert.equal(token.balanceOf(beneficiary), balanceExpected, "Beneficiary balance should not change while token is paused");
-    Assert.equal(token.totalSupply(), totalExpected, "totalSupply should not change while token is paused");
-  }
-*/
-   function testUnpause() public {
-    token.unpause();
-    Assert.equal(token.paused(), false, "Token should be unpaused");
-  }
-
   function testMintAfterUnpause() public {
     address beneficiary = address(0xf17f52151EbEF6C7334FAD080c5704D77216b732);
 

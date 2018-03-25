@@ -1,6 +1,5 @@
 pragma solidity ^0.4.18;
 
-//import "../node_modules/zeppelin-solidity/contracts/token/ERC20/StandardToken.sol";
 import "./TransferableToken.sol";
 
 
@@ -15,7 +14,6 @@ contract MintableToken is TransferableToken {
     event MintFinished();
 
     bool public mintingFinished = false;
-
 
     modifier canMint() {
         require(!mintingFinished);

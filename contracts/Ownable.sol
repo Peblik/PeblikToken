@@ -37,6 +37,9 @@ contract Ownable {
         newOwner = _newOwner;
     }
 
+  /**
+   * @dev Allows the new owner to confirm that they are taking control of the contract..tr
+   */
     function acceptOwnership() public {
         require(msg.sender == newOwner);
         OwnershipTransferred(owner, msg.sender);
