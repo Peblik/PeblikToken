@@ -1,9 +1,9 @@
 pragma solidity ^0.4.18;
 
-import "../node_modules/zeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
-import "./TransferableToken.sol";
+//import "../node_modules/zeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
+import "./MintableToken.sol";
 
-contract PeblikToken is TransferableToken, MintableToken {
+contract PeblikToken is MintableToken {
 
     string public name = "Peblik Token";
     string public symbol = "PEB";

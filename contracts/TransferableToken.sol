@@ -1,8 +1,10 @@
 pragma solidity ^0.4.18;
 
-import "../node_modules/zeppelin-solidity/contracts/token/ERC20/PausableToken.sol";
+//import "../node_modules/zeppelin-solidity/contracts/token/ERC20/PausableToken.sol";
+import "./Ownable.sol";
+import "../node_modules/zeppelin-solidity/contracts/token/ERC20/StandardToken.sol";
 
-contract TransferableToken is PausableToken {
+contract TransferableToken is StandardToken, Ownable  { //is PausableToken
 
     bool public transferable;
 

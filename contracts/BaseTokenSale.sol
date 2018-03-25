@@ -1,11 +1,7 @@
 pragma solidity ^0.4.18;
 
-import "../node_modules/zeppelin-solidity/contracts/ownership/Ownable.sol";
-import "../node_modules/zeppelin-solidity/contracts/lifecycle/Pausable.sol";
-import "../node_modules/zeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
+import "./Pausable.sol";
 import "../node_modules/zeppelin-solidity/contracts/math/SafeMath.sol";
-//import "./IPriceStrategy.sol";
-//import "./FlatPricing.sol";
 import "./PeblikToken.sol";
 
 /**
@@ -219,6 +215,9 @@ contract BaseTokenSale is Pausable {
 
         // Record that the sale cap has been reached, if applicable
         if (tokensSold >= tokenCap) {
+            if (tokensSold > tokenCap) {
+                token.drawFromPublicReserve(tokensSold.sub(tokenCap));
+            } 
             capReached = true;
             CapReached(tokenCap, tokensSold);
         }
