@@ -196,7 +196,7 @@ contract('PeblikPresale', function(accounts) {
     });
  
     it('makes external purchase', async function() {
-        const centsAmount = 24000;
+        const centsAmount = 24000; // $240.00
         try {
             const source = await presaleContract.paymentSource.call();
             assert.equal(source, pmtSrc, 'makes external purchase - Payment Source Failed');
@@ -558,7 +558,13 @@ contract('PeblikPresale', function(accounts) {
     function RecordLog(log) {
         switch (log.event) {
             case "TokensBought": {
-                console.log("Event:" + " " + log.event +": " + log.args.tokenAmount.toNumber() + " by " + log.args.buyer + " purchaser " + log.args.purchaser + " centsPaid: " + log.args.centsPaid.toNumber());
+                console.log("Event:" + " " + log.event +": " + log.args.tokenAmount.toNumber() + " by " + log.args.buyer + ", purchaser " + log.args.purchaser + ", centsPaid: " + log.args.centsPaid.toNumber());
+                console.log("args:");
+                for (const key of Object.keys(log.args))
+                {
+                    console.log(key + ": " + log.args[key]);
+                }    
+                break;
                 break;
             }
             case "CapReached": {

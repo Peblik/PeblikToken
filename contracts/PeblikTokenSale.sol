@@ -52,7 +52,7 @@ contract PeblikTokenSale is BaseTokenSale {
      */
     function PeblikTokenSale(address _token, uint256 _startTime, uint256 _endTime, uint256 _centsPerToken, uint256 _centsPerEth, uint256 _cap, uint256 _min, uint256 _max, address _wallet, uint256[] _thresholds, uint256[] _prices) 
                 BaseTokenSale(_token, _startTime,  _endTime, _centsPerToken, _centsPerEth, _cap, _min, _max, _wallet) public {
-        //pricing = new SaleThresholdPricing(_thresholds, _prices);
+
         changePriceLevels(_thresholds, _prices);
     }
 
@@ -115,7 +115,7 @@ contract PeblikTokenSale is BaseTokenSale {
      * @param _prices An array of price-per-token values corresponding to the sales thresholds
      */
     function changePriceLevels(uint256[] _thresholds, uint256[] _prices) public onlyOwner { 
-        require(_thresholds.length <= 8 && _prices.length <= 8); // keep the levels limited
+        require(_thresholds.length <= 4); // keep the levels limited
         require(_thresholds[0] == 0); // must have a default level
         require(_thresholds.length == _prices.length); // arrays must have same number of entries
 
@@ -133,7 +133,7 @@ contract PeblikTokenSale is BaseTokenSale {
                 revert();
             }
             prevAmount = _thresholds[i];
-            levels.push(PriceLevel(_thresholds[i], _prices[i]));
+            levels.push(PriceLevel(_thresholds[i] * 1e18, _prices[i]));
             LogPrice(_thresholds[i], _prices[i]);
         }
         PriceLevelsChanged(levels.length);
@@ -142,7 +142,7 @@ contract PeblikTokenSale is BaseTokenSale {
     /**
     * Caclulates the effective price for a sale transaction.
     *
-    * @param _tokensSold The total tokens sold in the sale so far
+    * @param _tokensSold The total tokens sold in the sale so far (with 18 decimals)
     * @return The effective price (in term of price per token)
     */
     function getCurrentPrice(uint256 _tokensSold) public view returns (uint256 pricePerToken) {
@@ -159,15 +159,4 @@ contract PeblikTokenSale is BaseTokenSale {
         }
         return levels[index].dollarPrice;
     }
-
-    /**
-     * @dev For testing purposes only. Calculates the number of tokens to be purchased with a given amount of wei.
-     */
-     /*
-    function calcTokens(uint256 weiAmount) public view returns (uint256 value) {
-        uint256 price = getCurrentPrice(tokensSold);
-        return weiAmount.mul(centsPerEth).div(price);
-    }
-    */
-
 }

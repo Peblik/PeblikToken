@@ -71,10 +71,10 @@ contract BaseTokenSale is Pausable {
     * @param buyer The address that got the tokens
     * @param centsPaid The amount paid for purchase, in US cents
     * @param tokenAmount The amount of tokens purchased
-    * @param totalCentsRaised Total cents raised in sale so far
-    * @param totalTokensSold The total number of tokens sold so far
+    * @param centsRaised Total cents raised in sale so far
+    * @param tokensSold The total number of tokens sold so far
     */
-    event TokensBought(address indexed purchaser, address indexed buyer, uint256 centsPaid, uint256 tokenAmount, uint256 totalCentsRaised, uint256 totalTokensSold);
+    event TokensBought(address indexed purchaser, address indexed buyer, uint256 centsPaid, uint256 tokenAmount, uint256 centsRaised, uint256 tokensSold);
     
     event ExternalPurchase(address indexed buyer, address indexed source, uint256 centsPaid);
     event StartTimeChanged(uint256 newTime);
@@ -97,10 +97,10 @@ contract BaseTokenSale is Pausable {
      * @param _endTime The time that the presale ends; after this no more purchases are possiible
      * @param _centsPerToken The initial price per token, in terms of US cents (e.g. $0.15 would be 15)
      * @param _centsPerEth The exchange rate between US cents and ether (e.g. $950.00 would be 95000)
-     * @param _cap The maximum number of tokens that can be sold duringg the presale.
+     * @param _cap The maximum number of tokens that can be sold during the presale (no decimals, so 50000 = 50 thousand tokens)
      * @param _wallet The address of the ethereum wallet for collecting funds
-     * @param _min The minimum amount required per purchase, in terms of US cents
-     * @param _min The maximum amount that a buyer can purchase during the entire presale, in terms of US cents
+     * @param _min The minimum amount required per purchase, in terms of US cents (no decimals)
+     * @param _min The maximum amount that a buyer can purchase during the entire presale, in terms of US cents (no decimals)
      */
     function BaseTokenSale(address _token, uint256 _startTime, uint256 _endTime, uint256 _centsPerToken, uint256 _centsPerEth, uint256 _cap, uint256 _min, uint256 _max, address _wallet) public {
         require(_token != 0x0);
@@ -119,15 +119,15 @@ contract BaseTokenSale is Pausable {
         endTime = _endTime;
         price = _centsPerToken;
         centsPerEth = _centsPerEth;
-        tokenCap = _cap;
+        tokenCap = _cap.mul(1e18);
         wallet = _wallet;
 
         changeMinMax(_min, _max);
     }
 
     function changeMinMax(uint256 _min, uint256 _max) internal {
-        minCents = _min.mul(1 ether);
-        maxCents = _max.mul(1 ether);
+        minCents = _min.mul(1e18);
+        maxCents = _max.mul(1e18);
 
         minWei = minCents.div(centsPerEth);
         maxWei = maxCents.div(centsPerEth);
@@ -171,13 +171,12 @@ contract BaseTokenSale is Pausable {
         require(validPurchase(_buyer));
         require(msg.sender == paymentSource); // transaction must come from pre-approved address
 
-        uint256 exactCents = _centsAmount * (1 ether);
+        uint256 exactCents = _centsAmount.mul(1e18);
         bool success = buyWithCents(exactCents, _buyer);
 
         if (success) {
             ExternalPurchase(_buyer, msg.sender, _centsAmount);
         }
-        
         return success;
     }
 
@@ -208,18 +207,19 @@ contract BaseTokenSale is Pausable {
         totalPurchase[_buyer] = totalAmount;
 
         // update sale stats
-        centsRaised = centsRaised.add(_exactCents.div(1 ether));
-        tokensSold = tokensSold.add(tokens.div(1 ether));
+        centsRaised = centsRaised.add(_exactCents);
+        tokensSold = tokensSold.add(tokens);
 
         TokensBought(msg.sender, _buyer, _exactCents, tokens, centsRaised, tokensSold);
 
         // Record that the sale cap has been reached, if applicable
         if (tokensSold >= tokenCap) {
+            capReached = true;
+            CapReached(tokenCap, tokensSold);
+
             if (tokensSold > tokenCap) {
                 token.drawFromPublicReserve(tokensSold.sub(tokenCap));
             } 
-            capReached = true;
-            CapReached(tokenCap, tokensSold);
         }
         
         return true;
@@ -284,8 +284,8 @@ contract BaseTokenSale is Pausable {
         centsPerEth = _newRate;
 
         // keep min/max in sync
-        minWei = minCents.div(centsPerEth).mul(1 ether);
-        maxWei = maxCents.div(centsPerEth).mul(1 ether);
+        minWei = minCents.div(centsPerEth);
+        maxWei = maxCents.div(centsPerEth);
 
         ConversionRateChanged(centsPerEth);
     }

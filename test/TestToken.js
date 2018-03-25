@@ -36,44 +36,6 @@ contract('PeblikToken', function(accounts) {
 
     });
 
-    it('should pause correctly', async function(){
-        try {
-            await tokenContract.pause().then((result) => { 
-                //console.log(result);
-                for (var i = 0; i < result.logs.length; i++) {
-                    var log = result.logs[i];
-                    //console.log(log);
-                    RecordLog(log);
-                }
-                //utils.assertEvent(presaleContract, { event: "Mint", logIndex: 0, args: { to: buyer1, amount: 1000000000000000000 }})
-             });
-            const isPaused = await tokenContract.paused();
-            //console.log(isPaused);
-            assert.equal(isPaused, true, 'Token was not paused correctly');
-        } catch (error) {
-            console.log(error);              
-        }
-    });
-
-    it('should unpause correctly', async function(){
-        try {
-            await tokenContract.unpause().then((result) => { 
-                //console.log(result);
-                for (var i = 0; i < result.logs.length; i++) {
-                    var log = result.logs[i];
-                    //console.log(log);
-                    RecordLog(log);
-                }
-                //utils.assertEvent(presaleContract, { event: "Mint", logIndex: 0, args: { to: buyer1, amount: 1000000000000000000 }})
-             });
-            const isPaused = await tokenContract.paused();
-            //console.log(isPaused);
-            assert.equal(isPaused, false, 'Token was not unpaused correctly');               
-        } catch (error) {
-            console.log(error);             
-        }
-    });
-
     it('should mint tokens and send to recipient', async function(){
         try {
             const tokenAmount = 20 * 1000000000000000000;
@@ -203,7 +165,6 @@ contract('PeblikToken', function(accounts) {
         switch (log.event) {
             case "TokensBought": {
                 console.log("Event:" + " " + log.event + ": " + log.args.tokenAmount.toNumber() + " by " + log.args.buyer + " purchaser " + log.args.purchaser + " centsPaid: " + log.args.centsPaid.toNumber());
-                break;
             }
             case "CapReached": {
                 console.log("Event:" + " " + log.event + ": " + log.args.tokensSold.toNumber() + " >= " + log.args.cap);

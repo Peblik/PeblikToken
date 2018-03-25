@@ -16,7 +16,6 @@ contract MintableToken is TransferableToken {
 
     bool public mintingFinished = false;
 
-
     modifier canMint() {
         require(!mintingFinished);
         _;
