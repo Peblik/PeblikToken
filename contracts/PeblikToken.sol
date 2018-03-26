@@ -119,12 +119,12 @@ contract PeblikToken is MintableToken {
      * @param _to The address to which to send the stranded tokens.
      */
     function claimStrandedTokens(address _token, address _to) public onlyOwner returns (bool) {
-		ERC20Basic strandedToken = ERC20Basic(_token);
-		return strandedToken.transfer(_to, strandedToken.balanceOf(this));
-	}
+        ERC20Basic strandedToken = ERC20Basic(_token);
+        return strandedToken.transfer(_to, strandedToken.balanceOf(this));
+    }
 
     /**
-     * @dev Throws if called by any account other than the controller.
+     * @dev Throws if called by any account other than the owner or controller.
      */
     modifier onlyOwnerOrController() {
         require(msg.sender == controller || msg.sender == owner);
@@ -140,7 +140,9 @@ contract PeblikToken is MintableToken {
     }
 
     /**
-     *
+     * @dev Authorizes an address (normally another contract) that can mint tokens and 
+     * change a subset of token properties.
+     * @param _newController The address to authorize
      */
     function setController(address _newController) public onlyOwner {
         require(_newController != 0x0);
@@ -150,7 +152,7 @@ contract PeblikToken is MintableToken {
     }
 
     /**
-     *
+     * De-authorizes the current controller address.
      */
     function clearController() external onlyOwner {
         address oldController = controller;
