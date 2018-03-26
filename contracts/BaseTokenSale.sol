@@ -93,14 +93,14 @@ contract BaseTokenSale is Pausable {
      * @dev Constructor
      *
      * @param _token The address of the PeblikToken contract
-     * @param _startTime The time that the main presale period begins
-     * @param _endTime The time that the presale ends; after this no more purchases are possiible
+     * @param _startTime The time that the main sale period begins
+     * @param _endTime The time that the sale ends; after this no more purchases are possiible
      * @param _centsPerToken The initial price per token, in terms of US cents (e.g. $0.15 would be 15)
      * @param _centsPerEth The exchange rate between US cents and ether (e.g. $950.00 would be 95000)
-     * @param _cap The maximum number of tokens that can be sold during the presale (no decimals, so 50000 = 50 thousand tokens)
+     * @param _cap The maximum number of tokens that can be sold during the sale (no decimals, so 50000 = 50 thousand tokens)
      * @param _wallet The address of the ethereum wallet for collecting funds
      * @param _min The minimum amount required per purchase, in terms of US cents (no decimals)
-     * @param _min The maximum amount that a buyer can purchase during the entire presale, in terms of US cents (no decimals)
+     * @param _min The maximum amount that a buyer can purchase during the entire sale, in terms of US cents (no decimals)
      */
     function BaseTokenSale(address _token, uint256 _startTime, uint256 _endTime, uint256 _centsPerToken, uint256 _centsPerEth, uint256 _cap, uint256 _min, uint256 _max, address _wallet) public {
         require(_token != 0x0);
@@ -253,7 +253,8 @@ contract BaseTokenSale is Pausable {
     */
     function changeStartTime (uint256 _newTime) public onlyOwner {
         require(_newTime < endTime); 
-        require(_newTime > now); 
+        require(_newTime > now);        
+        require(now >= startTime); 
         require(!saleComplete);
 
         startTime = _newTime;
