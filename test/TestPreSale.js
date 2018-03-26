@@ -440,7 +440,7 @@ contract('PeblikPresale', function(accounts) {
     it('change Start Time', async function() {
         try {
             var startTime = await presaleContract.startTime();
-            const newTime = startTime.toNumber() - 1;
+            const newTime = startTime.toNumber() + 2;
 
             await presaleContract.changeStartTime(newTime).then((result) => { 
                 LogEvents(result);

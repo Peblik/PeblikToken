@@ -11,11 +11,8 @@ contract PeblikToken is MintableToken {
     /* Address of the current contract that's allowed to call mint() and other functions */
     address public controller;
 
-    /* Initial supply to be owned by this contract, if any */
-    uint256 public initialSupply = 0; // at the start, there are no tokens yet
-
     /* The maximum number of tokens that can ever be in circulation. */
-    uint256 public maxSupply = 2400000000e18; // 2.4 billion tokens max
+    //uint256 public maxSupply = 2400000000e18; // 2.4 billion tokens max
 
     /* Reserved for future issuance to the public, when new resource assets are acquired as backing */
     uint256 public publicReserve = 350000000e18; // 350,000,000 tokens
@@ -111,17 +108,6 @@ contract PeblikToken is MintableToken {
         Transfer(address(0), _to, _amount);
         return true;
     }
-
-    /**
-     * @dev In case someone accidentally sends other ERC20 tokens to this contract,
-     * add a way to get them back out.
-     * @param _token The address of the type of token that was received.
-     * @param _to The address to which to send the stranded tokens.
-     */
-    function claimStrandedTokens(address _token, address _to) public onlyOwner returns (bool) {
-		ERC20Basic strandedToken = ERC20Basic(_token);
-		return strandedToken.transfer(_to, strandedToken.balanceOf(this));
-	}
 
     /**
      * @dev Throws if called by any account other than the controller.

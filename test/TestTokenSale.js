@@ -489,6 +489,21 @@ contract('PeblikTokenSale', function(accounts) {
         }
     });
 
+    it('claim Stranded Tokens', async function(){
+        const weiAmount = new web3.BigNumber(1 * weiPerEth);
+        const tokensExpected = new web3.BigNumber(2700 * weiPerEth);  // based on 30 cent price
+        try {
+            const tokenAmount = (await tokenSaleContract.calcTokens.call(weiAmount.toNumber())).toNumber();
+            console.log("tokenAmount = " + tokenAmount);
+            await tokenSaleContract.claimStrandedTokens(tokenContract.address, buyer4, tokenAmount, { from: owner1}).then((result) => { 
+                LogEvents(result);
+            });
+
+        } catch (error) {
+            console.log(error);              
+        }
+    });
+
     it('Sale Complete', async function() {
         try {
             

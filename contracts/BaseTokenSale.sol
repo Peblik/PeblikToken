@@ -1,7 +1,7 @@
 pragma solidity ^0.4.18;
 
 import "./Pausable.sol";
-import "../node_modules/zeppelin-solidity/contracts/math/SafeMath.sol";
+import "../node_modules/zeppelin-solidity/contracts/token/ERC20/ERC20Basic.sol";
 import "./PeblikToken.sol";
 
 /**
@@ -254,7 +254,7 @@ contract BaseTokenSale is Pausable {
     function changeStartTime (uint256 _newTime) public onlyOwner {
         require(_newTime < endTime); 
         require(_newTime > now);        
-        require(now >= startTime); 
+        require(now < startTime); 
         require(!saleComplete);
 
         startTime = _newTime;
@@ -349,17 +349,21 @@ contract BaseTokenSale is Pausable {
         return price;
     }
 
-
     /**
      * @dev In case someone accidentally sends other ERC20 tokens to this contract,
      * add a way to get them back out.
      * @param _token The address of the type of token that was received.
      * @param _to The address to which to send the stranded tokens.
+     * @param _amount The amount of stranded tokens to claim.
      */
-    function claimStrandedTokens(address _token, address _to) public onlyOwner returns (bool) {
-		ERC20Basic strandedToken = ERC20Basic(_token);
-		return strandedToken.transfer(_to, strandedToken.balanceOf(this));
-	}
+    function claimStrandedTokens(address _token, address _to, uint256 _amount) public onlyOwner returns (bool) { 
+        require(_token != 0x0);
+        require(_to != 0x0);
+        require(_amount > 0);
+        ERC20Basic strandedToken = ERC20Basic(_token);
+        require(_amount <= strandedToken.balanceOf(this));
+        return strandedToken.transfer(_to, _amount);
+    }
 
     // -----------------------------------------------------------
     /** Testing functions, for test script and debugging use. **/
