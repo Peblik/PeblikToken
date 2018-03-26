@@ -11,9 +11,6 @@ contract PeblikToken is MintableToken {
     /* Address of the current contract that's allowed to call mint() and other functions */
     address public controller;
 
-    /* Initial supply to be owned by this contract, if any */
-    uint256 public initialSupply = 0; // at the start, there are no tokens yet
-
     /* The maximum number of tokens that can ever be in circulation. */
     uint256 public maxSupply = 2400000000e18; // 2.4 billion tokens max
 
