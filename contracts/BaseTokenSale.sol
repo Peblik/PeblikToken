@@ -268,6 +268,7 @@ contract BaseTokenSale is Pausable {
     function changeEndTime (uint256 _newTime) public onlyOwner {
         require(_newTime > startTime); 
         require(_newTime > now); 
+        require(now <= endTime); 
         require(!saleComplete);
 
         endTime = _newTime;

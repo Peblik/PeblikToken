@@ -41,7 +41,6 @@ contract PeblikPresale is BaseTokenSale {
     function PeblikPresale(address _token, uint256 _earlyTime, uint256 _startTime, uint256 _endTime, uint256 _centsPerToken, uint256 _centsPerEth, uint256 _cap, uint256 _min, uint256 _max, address _wallet) BaseTokenSale(_token, _startTime,  _endTime, _centsPerToken, _centsPerEth, _cap, _min, _max, _wallet) public {
         require(_earlyTime >= now);
         earlyTime = _earlyTime;
-        //pricing = new FlatPricing(_centsPerToken);
     }
 
     /** 

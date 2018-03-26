@@ -39,14 +39,14 @@ contract PeblikTokenSale is BaseTokenSale {
      * @dev Constructor
      *
      * @param _token The address of the PeblikToken contract
-     * @param _startTime The time that the main presale period begins
-     * @param _endTime The time that the presale ends; after this no more purchases are possiible
+     * @param _startTime The time that the main sale period begins
+     * @param _endTime The time that the sale ends; after this no more purchases are possiible
      * @param _centsPerToken The initial price per token, in terms of US cents (e.g. $0.15 would be 15)
      * @param _centsPerEth The exchange rate between US cents and ether (e.g. $950.00 would be 95000)
-     * @param _cap The maximum number of tokens that can be sold duringg the presale.
+     * @param _cap The maximum number of tokens that can be sold duringg the sale.
      * @param _wallet The address of the ethereum wallet for collecting funds
      * @param _min The minimum amount required per purchase, in terms of US cents
-     * @param _max The maximum amount that a buyer can purchase during the entire presale, in terms of US cents
+     * @param _max The maximum amount that a buyer can purchase during the entire sale, in terms of US cents
      * @param _thresholds An array of tokens-sold amounts that trigger new price levels
      * @param _prices An array of price-per-token values corresponding to the sales thresholds
      */
@@ -115,6 +115,7 @@ contract PeblikTokenSale is BaseTokenSale {
      * @param _prices An array of price-per-token values corresponding to the sales thresholds
      */
     function changePriceLevels(uint256[] _thresholds, uint256[] _prices) public onlyOwner { 
+        require(_thresholds.length > 0); // array must contain elements
         require(_thresholds.length <= 4); // keep the levels limited
         require(_thresholds[0] == 0); // must have a default level
         require(_thresholds.length == _prices.length); // arrays must have same number of entries
@@ -157,6 +158,6 @@ contract PeblikTokenSale is BaseTokenSale {
                 return levels[index].dollarPrice;
             }
         }
-        return levels[index].dollarPrice;
+        return levels[0].dollarPrice;
     }
 }

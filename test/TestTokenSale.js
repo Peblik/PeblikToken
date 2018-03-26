@@ -386,7 +386,7 @@ contract('PeblikTokenSale', function(accounts) {
             const tokenAmount = (await tokenSaleContract.calcTokens.call(weiAmount.toNumber())).toNumber();
             console.log("tokenAmount = " + tokenAmount);
 
-            var isCapReached = await tokenSaleContract.capReached();
+            var isCapReached = await tokenSaleContract.capReached.call();
             assert.equal(isCapReached, false, 'buys tokens after Rate Change and Wallet - Cap Reached Failed');
 
             const totalExpected = (await tokenContract.totalSupply()).toNumber();
