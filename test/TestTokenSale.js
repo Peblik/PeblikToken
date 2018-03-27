@@ -94,9 +94,18 @@ contract('PeblikTokenSale', function(accounts) {
 
     it('adds to whitelist', async function() {
         try {
+            // add buyer1
+            var isListed = await tokenSaleContract.isWhitelisted(buyer1);
+        
+            if (!isListed) {
+                await tokenSaleContract.addToWhitelist(buyer1);
+                isListed = await tokenSaleContract.isWhitelisted(buyer1);
+            }
+            assert.equal(isListed, true, 'Is White listed Failed');
+
             // add buyer3
             var isListed = await tokenSaleContract.isWhitelisted(buyer3);
-        
+
             if (!isListed) {
                 await tokenSaleContract.addToWhitelist(buyer3);
                 isListed = await tokenSaleContract.isWhitelisted(buyer3);
@@ -120,6 +129,17 @@ contract('PeblikTokenSale', function(accounts) {
     it('buys tokens', async function(){
         const ethAmount = 5;
         try {
+           // check timing
+           var presleep = Date.now();
+           console.log(" presleep = " + Math.floor(presleep/1000));
+           await sleep(2000);
+           var startTime = await tokenSaleContract.startTime();
+           console.log("startTime = " + startTime);
+           var now = Date.now();
+           console.log("      now = " + Math.floor(now/1000));
+           var endTime = await tokenSaleContract.endTime();
+           console.log("  endTime = " + endTime);
+
             var tokensSold = await tokenSaleContract.tokensSold();
             console.log("Tokens Sold: " + tokensSold + ", Cap: " + tokenCap);
             const dollarPrice = (await tokenSaleContract.getCurrentPrice.call(tokensSold));
@@ -135,15 +155,15 @@ contract('PeblikTokenSale', function(accounts) {
             assert.equal(isCapReached, false, 'buys tokens - Cap Reached Failed');
 
             const totalExpected = (await tokenContract.totalSupply()).toNumber();
-            const buyerExpected = (await tokenContract.balanceOf(buyer3)).toNumber();
+            const buyerExpected = (await tokenContract.balanceOf(buyer1)).toNumber();
             const walletExpected = (await web3.eth.getBalance(wallet1)).toNumber();
 
-            await tokenSaleContract.buyTokens({ value: weiAmount.toNumber(), from: buyer3}).then((result) => { 
+            await tokenSaleContract.buyTokens({ value: weiAmount.toNumber(), from: buyer1}).then((result) => { 
                 LogEvents(result);
              });
 
             // check that the buyer got the right amount of tokens
-            const buyerBal = (await tokenContract.balanceOf(buyer3)).toNumber();
+            const buyerBal = (await tokenContract.balanceOf(buyer1)).toNumber();
             // check that tokensSold, totalSupply and availableSupply have been updated
             const totalSupply = (await tokenContract.totalSupply()).toNumber();
             // check that wei was transferred to correct wallet address
@@ -494,7 +514,7 @@ contract('PeblikTokenSale', function(accounts) {
         const tokensExpected = new web3.BigNumber(2700 * weiPerEth);  // based on 30 cent price
         try {
 
-            const balance = await tokenContract.balanceOf(buyer4);
+            const balance = (await tokenContract.balanceOf(buyer4)).toNumber();
             const tokenAmount = 300 * 1000000000000000000;
             const balanceExpected = balance + tokenAmount;
             console.log("balanceExpected: " + balanceExpected);
@@ -512,9 +532,10 @@ contract('PeblikTokenSale', function(accounts) {
             await tokenSaleContract.claimStrandedTokens(tokenContract.address, buyer4, tokenAmount, { from: owner1}).then((result) => { 
                 LogEvents(result);
             });
-
+            const contractBalance = (await tokenContract.balanceOf(tokenSaleContract.address)).toNumber();
             const newBalance = (await tokenContract.balanceOf(buyer4)).toNumber();
-            assert.equal(newBalance, balanceExpected, 'Balance did not increase correctly');
+            assert.equal(contractBalance, 0, 'Contract token balance was not correct');
+            assert.equal(newBalance, balanceExpected, 'Beneficiary balance did not increase correctly');
 
         } catch (error) {
             console.log(error);              
