@@ -28,8 +28,8 @@ contract PeblikToken is MintableToken {
     event ResourceReserveAdded(uint256 amount);
     event PublicReserveDrawn(uint256 amount);
     event ResourceReserveDrawn(uint256 amount);
-
     event ControllerChanged(address indexed oldAddress, address indexed newAddress);
+    event ClaimedStrandedTokens(address tokenAddress, address beneficiary, uint256 tokenAmount);
 
     function PeblikToken() public {
         totalSupply_ = 0;
@@ -78,7 +78,6 @@ contract PeblikToken is MintableToken {
      *
      * @param _drawAmount Amount of tokens to pull from the reserve into available token supply.
      */
-
     function drawFromResourceReserve(uint256 _drawAmount) public onlyOwner {
         require(_drawAmount > 0);
         require(resourceReserve >= _drawAmount);
@@ -115,9 +114,19 @@ contract PeblikToken is MintableToken {
      * @param _token The address of the type of token that was received.
      * @param _to The address to which to send the stranded tokens.
      */
-    function claimStrandedTokens(address _token, address _to) public onlyOwner returns (bool) {
+    function claimStrandedTokens(address _token, address _to, uint256 _amount) public onlyOwner returns (bool) { 
+        require(_token != 0x0);
+        require(_to != 0x0);
+        require(_amount > 0);
+        
         ERC20Basic strandedToken = ERC20Basic(_token);
-        return strandedToken.transfer(_to, strandedToken.balanceOf(this));
+        require(_amount <= strandedToken.balanceOf(this));
+        
+        if (strandedToken.transfer(_to, _amount)) {
+            ClaimedStrandedTokens(_token, _to, _amount);
+            return true;
+        }
+        return false;
     }
 
     /**

@@ -86,9 +86,9 @@ contract BaseTokenSale is Pausable {
     event BuyerRemoved(address indexed buyer, uint256 buyerCount);
     event CapReached(uint256 cap, uint256 tokensSold);
     event PurchaseError(string msg, address indexed sender);
-    // TEST
     event LogPrice(uint256 tokenLevel, uint256 price);
-    event ClaimedTokens(address tokenAddress, address beneficiary, uint256 tokenAmount);
+    event ClaimedStrandedTokens(address tokenAddress, address beneficiary, uint256 tokenAmount);
+
     /**
      * @dev Constructor
      *
@@ -192,9 +192,6 @@ contract BaseTokenSale is Pausable {
         }
 
         uint256 currentPrice = getCurrentPrice(tokensSold);
-        // TEST
-        LogPrice(tokensSold, currentPrice);
-
         uint256 tokens = _exactCents.div(currentPrice);
         
         // mint tokens as we go
@@ -362,8 +359,9 @@ contract BaseTokenSale is Pausable {
         
         ERC20Basic strandedToken = ERC20Basic(_token);
         require(_amount <= strandedToken.balanceOf(this));
+
         if (strandedToken.transfer(_to, _amount)) {
-            ClaimedTokens(_token, _to, _amount);
+            ClaimedStrandedTokens(_token, _to, _amount);
             return true;
         }
         return false;

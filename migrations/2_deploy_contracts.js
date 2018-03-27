@@ -11,7 +11,7 @@ module.exports = function(deployer, network, accounts) {
 
       const earlyTime = Math.round((dt.getTime())/1000); // one second in the future
       //const startTime = earlyTime + 1800; // 30 minutes in the future
-      const startTime = earlyTime + 10; // 10 seconds in the future
+      const startTime = earlyTime + 60; // 60 seconds in the future
       const endTime = startTime + 5400; // 90 minutes after start
           
       const centsPerToken = 15;
