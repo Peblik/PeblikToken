@@ -382,5 +382,14 @@ contract BaseTokenSale is Pausable {
 
         return tokens;
     }
-    
+
+    function getStrandedTokens(address _token) public returns (uint256 value) { 
+        ERC20Basic strandedToken = ERC20Basic(_token);
+        return strandedToken.balanceOf(this);
+    }
+
+    function getCurrentTime() public returns (uint256 value) { 
+        return now;
+    }
+
 }

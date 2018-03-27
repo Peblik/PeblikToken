@@ -37,6 +37,42 @@ contract('PeblikTokenSale', function(accounts) {
         });
     });
 
+    it('change Start Time', async function() {
+        try {
+            var dt = new Date();
+            dt.setDate(dt.getDate());
+            const currentTime = await tokenSaleContract.getCurrentTime.call();
+            console.log("currentTime: " + currentTime);
+            const startAmtTime = await tokenSaleContract.startTime();
+            console.log("startAmtTime: " + startAmtTime);
+            const newTime = (Math.round((dt.getTime())/1000)) + 2; // now
+            console.log("newTime: " + newTime);
+            await tokenSaleContract.changeStartTime(newTime).then((result) => { 
+                LogEvents(result);
+            });
+
+            startTime = await tokenSaleContract.startTime();
+            assert.equal(newTime, startTime.toNumber(), 'change Start Time Failed');                
+        } catch (error) {
+            console.log(error);                
+        }
+    });
+
+    it('change End Time', async function() {
+        try {
+            var dt = new Date();
+            dt.setDate(dt.getDate());
+            const newTime = (Math.round((dt.getTime())/1000)) + 5400; // 90 minutes after start
+            await tokenSaleContract.changeEndTime(newTime).then((result) => { 
+                LogEvents(result);
+            });
+            endTime = await tokenSaleContract.endTime();
+            assert.equal(newTime, endTime.toNumber(), 'change End Time Failed');                
+        } catch (error) {
+            console.log(error);                
+        }
+    });
+
     it('changes payment source', async function() {
         try {
             await tokenSaleContract.changePaymentSource(pmtSrc, { from: owner1 }).then((result) => { 
@@ -422,37 +458,6 @@ contract('PeblikTokenSale', function(accounts) {
         }
     });
 
-    it('change Start Time', async function() {
-        try {
-            var dt = new Date();
-            dt.setDate(dt.getDate());
-            const newTime = (Math.round((dt.getTime())/1000)) + 1; // now
-            await tokenSaleContract.changeStartTime(newTime).then((result) => { 
-                LogEvents(result);
-            });
-
-            startTime = await tokenSaleContract.startTime();
-            assert.equal(newTime, startTime.toNumber(), 'change Start Time Failed');                
-        } catch (error) {
-            console.log(error);                
-        }
-    });
-
-    it('change End Time', async function() {
-        try {
-            var dt = new Date();
-            dt.setDate(dt.getDate());
-            const newTime = (Math.round((dt.getTime())/1000)) + 5400; // 90 minutes after start
-            await tokenSaleContract.changeEndTime(newTime).then((result) => { 
-                LogEvents(result);
-            });
-            endTime = await tokenSaleContract.endTime();
-            assert.equal(newTime, endTime.toNumber(), 'change End Time Failed');                
-        } catch (error) {
-            console.log(error);                
-        }
-    });
-
    it('change Employee Pool Wallet', async function() {
         try {
             await tokenSaleContract.changeEmployeePoolWallet(owner1).then((result) => { 
@@ -493,12 +498,15 @@ contract('PeblikTokenSale', function(accounts) {
         const weiAmount = new web3.BigNumber(1 * weiPerEth);
         const tokensExpected = new web3.BigNumber(2700 * weiPerEth);  // based on 30 cent price
         try {
+            const strandedTokens = (await tokenSaleContract.getStrandedTokens.call(tokenContract.address)).toNumber();
             const tokenAmount = (await tokenSaleContract.calcTokens.call(weiAmount.toNumber())).toNumber();
+            console.log("strandedTokens = " + strandedTokens);
             console.log("tokenAmount = " + tokenAmount);
-            await tokenSaleContract.claimStrandedTokens(tokenContract.address, buyer4, tokenAmount, { from: owner1}).then((result) => { 
-                LogEvents(result);
-            });
-
+            if (strandedTokens > 0) {
+                await tokenSaleContract.claimStrandedTokens(tokenContract.address, buyer4, tokenAmount, { from: owner1}).then((result) => { 
+                    LogEvents(result);
+                });
+            }
         } catch (error) {
             console.log(error);              
         }
