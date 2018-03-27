@@ -437,22 +437,6 @@ contract('PeblikPresale', function(accounts) {
         }
     });
 
-    it('change Start Time', async function() {
-        try {
-            var startTime = await presaleContract.startTime();
-            const newTime = startTime.toNumber() + 2;
-
-            await presaleContract.changeStartTime(newTime).then((result) => { 
-                LogEvents(result);
-             });
-
-            startTime = await presaleContract.startTime();
-            assert.equal(newTime, startTime.toNumber(), 'change Start Time Failed');                
-        } catch (error) {
-            console.log(error);                
-        }
-    });
-
     it('checks for early time', async function() {
         try {
             var earlyTime = await presaleContract.earlyTime();
@@ -468,12 +452,29 @@ contract('PeblikPresale', function(accounts) {
             assert.equal(isEarly, true, 'Should be in earlybird phase');
 
             // early bird was only set up to last 10 seconds, so wait 11
-            await sleep(11000);
+            //await sleep(11000);
 
         } catch (error) {
             console.log(error);                
         }
     })
+
+    it('change Start Time', async function() {
+        try {
+            var now = Date.now() / 1000;
+            const newTime = Math.floor(now) + 2;
+            console.log("newTime = " + Math.floor(newTime));
+
+            await presaleContract.changeStartTime(newTime).then((result) => { 
+                LogEvents(result);
+             });
+
+            startTime = await presaleContract.startTime();
+            assert.equal(newTime, startTime.toNumber(), 'change Start Time Failed');                
+        } catch (error) {
+            console.log(error);                
+        }
+    });
 
     it('change End Time', async function() {
         try {
@@ -493,6 +494,9 @@ contract('PeblikPresale', function(accounts) {
 
     it('checks that early phase has passed', async function() {
         try {
+            // wait for start time to kick in
+            await(sleep(10000));
+
             now = Date.now();
             console.log("  new now = " + Math.floor(now/1000));
 
