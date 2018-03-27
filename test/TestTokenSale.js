@@ -424,15 +424,15 @@ contract('PeblikTokenSale', function(accounts) {
 
     it('change Start Time', async function() {
         try {
-            var dt = new Date();
-            dt.setDate(dt.getDate());
-            const newTime = (Math.round((dt.getTime())/1000)) + 1; // now
+            var startTime = await tokenSaleContract.startTime();
+            const newTime = startTime.toNumber() + 200;
+
             await tokenSaleContract.changeStartTime(newTime).then((result) => { 
                 LogEvents(result);
-            });
+             });
 
             startTime = await tokenSaleContract.startTime();
-            assert.equal(newTime, startTime.toNumber(), 'change Start Time Failed');                
+            assert.equal(newTime, startTime.toNumber(), 'change Start Time Failed');                         
         } catch (error) {
             console.log(error);                
         }
@@ -493,11 +493,24 @@ contract('PeblikTokenSale', function(accounts) {
         const weiAmount = new web3.BigNumber(1 * weiPerEth);
         const tokensExpected = new web3.BigNumber(2700 * weiPerEth);  // based on 30 cent price
         try {
-            const tokenAmount = (await tokenSaleContract.calcTokens.call(weiAmount.toNumber())).toNumber();
-            console.log("tokenAmount = " + tokenAmount);
+
+            const balance = await tokenContract.balanceOf(buyer4);
+            const tokenAmount = 300 * 1000000000000000000;
+            const balanceExpected = balance + tokenAmount;
+            console.log("balanceExpected: " + balanceExpected);
+            await tokenContract.mint(tokenSaleContract.address, tokenAmount).then((result) => {
+                LogEvents(result);
+            }); 
+
+            const saleBalance = await tokenContract.balanceOf(tokenSaleContract.address);
+            console.log("saleBalance: " + saleBalance);
+
             await tokenSaleContract.claimStrandedTokens(tokenContract.address, buyer4, tokenAmount, { from: owner1}).then((result) => { 
                 LogEvents(result);
             });
+
+            const newBalance = await tokenContract.balanceOf(buyer4);
+            assert.equal(newBalance, balanceExpected, 'Balance did not increase correctly');
 
         } catch (error) {
             console.log(error);              
