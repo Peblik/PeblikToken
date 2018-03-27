@@ -120,6 +120,7 @@ contract('PeblikTokenSale', function(accounts) {
     it('buys tokens', async function(){
         const ethAmount = 5;
         try {
+            await sleep(1000);
             var tokensSold = await tokenSaleContract.tokensSold();
             console.log("Tokens Sold: " + tokensSold + ", Cap: " + tokenCap);
             const dollarPrice = (await tokenSaleContract.getCurrentPrice.call(tokensSold));
