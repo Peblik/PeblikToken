@@ -362,7 +362,7 @@ contract BaseTokenSale is Pausable {
         
         ERC20Basic strandedToken = ERC20Basic(_token);
         require(_amount <= strandedToken.balanceOf(this));
-        if(strandedToken.transfer(_to, _amount) {
+        if (strandedToken.transfer(_to, _amount)) {
             ClaimedTokens(_token, _to, _amount);
             return true;
         }
