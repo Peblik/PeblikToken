@@ -88,7 +88,7 @@ contract BaseTokenSale is Pausable {
     event PurchaseError(string msg, address indexed sender);
     // TEST
     event LogPrice(uint256 tokenLevel, uint256 price);
-
+    event ClaimedTokens(address tokenAddress, address beneficiary, uint256 tokenAmount);
     /**
      * @dev Constructor
      *
@@ -253,7 +253,7 @@ contract BaseTokenSale is Pausable {
     */
     function changeStartTime (uint256 _newTime) public onlyOwner {
         require(_newTime < endTime); 
-        require(_newTime > now);        
+        require(_newTime > now);
         require(now < startTime); 
         require(!saleComplete);
 
@@ -267,8 +267,7 @@ contract BaseTokenSale is Pausable {
     */
     function changeEndTime (uint256 _newTime) public onlyOwner {
         require(_newTime > startTime); 
-        require(_newTime > now); 
-        require(now <= endTime); 
+        require(_newTime > now);
         require(!saleComplete);
 
         endTime = _newTime;
@@ -360,9 +359,14 @@ contract BaseTokenSale is Pausable {
         require(_token != 0x0);
         require(_to != 0x0);
         require(_amount > 0);
+        
         ERC20Basic strandedToken = ERC20Basic(_token);
         require(_amount <= strandedToken.balanceOf(this));
-        return strandedToken.transfer(_to, _amount);
+        if(strandedToken.transfer(_to, _amount) {
+            ClaimedTokens(_token, _to, _amount);
+            return true;
+        }
+        return false;
     }
 
     // -----------------------------------------------------------
