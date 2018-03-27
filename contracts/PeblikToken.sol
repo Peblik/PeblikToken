@@ -12,7 +12,7 @@ contract PeblikToken is MintableToken {
     address public controller;
 
     /* The maximum number of tokens that can ever be in circulation. */
-    //uint256 public maxSupply = 2400000000e18; // 2.4 billion tokens max
+    uint256 public maxSupply = 2400000000e18; // 2.4 billion tokens max
 
     /* Reserved for future issuance to the public, when new resource assets are acquired as backing */
     uint256 public publicReserve = 350000000e18; // 350,000,000 tokens
@@ -110,7 +110,18 @@ contract PeblikToken is MintableToken {
     }
 
     /**
-     * @dev Throws if called by any account other than the controller.
+     * @dev In case someone accidentally sends other ERC20 tokens to this contract,
+     * add a way to get them back out.
+     * @param _token The address of the type of token that was received.
+     * @param _to The address to which to send the stranded tokens.
+     */
+    function claimStrandedTokens(address _token, address _to) public onlyOwner returns (bool) {
+        ERC20Basic strandedToken = ERC20Basic(_token);
+        return strandedToken.transfer(_to, strandedToken.balanceOf(this));
+    }
+
+    /**
+     * @dev Throws if called by any account other than the owner or controller.
      */
     modifier onlyOwnerOrController() {
         require(msg.sender == controller || msg.sender == owner);
@@ -126,7 +137,9 @@ contract PeblikToken is MintableToken {
     }
 
     /**
-     *
+     * @dev Authorizes an address (normally another contract) that can mint tokens and 
+     * change a subset of token properties.
+     * @param _newController The address to authorize
      */
     function setController(address _newController) public onlyOwner {
         require(_newController != 0x0);
@@ -136,7 +149,7 @@ contract PeblikToken is MintableToken {
     }
 
     /**
-     *
+     * De-authorizes the current controller address.
      */
     function clearController() external onlyOwner {
         address oldController = controller;

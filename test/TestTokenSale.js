@@ -498,15 +498,26 @@ contract('PeblikTokenSale', function(accounts) {
         const weiAmount = new web3.BigNumber(1 * weiPerEth);
         const tokensExpected = new web3.BigNumber(2700 * weiPerEth);  // based on 30 cent price
         try {
-            const strandedTokens = (await tokenSaleContract.getStrandedTokens.call(tokenContract.address)).toNumber();
-            const tokenAmount = (await tokenSaleContract.calcTokens.call(weiAmount.toNumber())).toNumber();
-            console.log("strandedTokens = " + strandedTokens);
-            console.log("tokenAmount = " + tokenAmount);
+
+            const balance = await tokenContract.balanceOf(buyer4);
+            const tokenAmount = 300 * 1000000000000000000;
+            const balanceExpected = balance + tokenAmount;
+            console.log("balanceExpected: " + balanceExpected);
+            await tokenContract.mint(tokenSaleContract.address, tokenAmount).then((result) => {
+                LogEvents(result);
+            }); 
+
+            const saleBalance = await tokenContract.balanceOf(tokenSaleContract.address);
+            console.log("saleBalance: " + saleBalance);
+
             if (strandedTokens > 0) {
                 await tokenSaleContract.claimStrandedTokens(tokenContract.address, buyer4, tokenAmount, { from: owner1}).then((result) => { 
                     LogEvents(result);
                 });
             }
+            const newBalance = await tokenContract.balanceOf(buyer4);
+            assert.equal(newBalance, balanceExpected, 'Balance did not increase correctly');
+
         } catch (error) {
             console.log(error);              
         }

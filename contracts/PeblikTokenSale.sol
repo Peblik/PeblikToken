@@ -115,10 +115,9 @@ contract PeblikTokenSale is BaseTokenSale {
      * @param _prices An array of price-per-token values corresponding to the sales thresholds
      */
     function changePriceLevels(uint256[] _thresholds, uint256[] _prices) public onlyOwner { 
-        require(_thresholds.length > 0); // array must contain elements
-        require(_thresholds.length <= 4); // keep the levels limited
-        require(_thresholds[0] == 0); // must have a default level
+        require(_thresholds.length > 0 && _thresholds.length <= 4); // array must contain elements
         require(_thresholds.length == _prices.length); // arrays must have same number of entries
+        require(_thresholds[0] == 0); // must have a default level
 
         uint256 prevAmount = 0;
         // Loops are costly, but  the length of the array is limited so we can live with it.
