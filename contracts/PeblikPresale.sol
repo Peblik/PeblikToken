@@ -108,7 +108,6 @@ contract PeblikPresale is BaseTokenSale {
 
     /* Testing methods */
     /* These will be removed prior to deployment on mainnet. */
-
     function isEarly() public view returns (bool) {
         if (now >= earlyTime && now < startTime) {
             return true;
