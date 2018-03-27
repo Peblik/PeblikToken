@@ -41,12 +41,7 @@ contract('PeblikTokenSale', function(accounts) {
         try {
             var dt = new Date();
             dt.setDate(dt.getDate());
-            const currentTime = await tokenSaleContract.getCurrentTime.call();
-            console.log("currentTime: " + currentTime);
-            const startAmtTime = await tokenSaleContract.startTime();
-            console.log("startAmtTime: " + startAmtTime);
-            const newTime = (Math.round((dt.getTime())/1000)) + 2; // now
-            console.log("newTime: " + newTime);
+            const newTime = (Math.round((dt.getTime())/1000)) + 1; // now
             await tokenSaleContract.changeStartTime(newTime).then((result) => { 
                 LogEvents(result);
             });
@@ -510,12 +505,15 @@ contract('PeblikTokenSale', function(accounts) {
             const saleBalance = await tokenContract.balanceOf(tokenSaleContract.address);
             console.log("saleBalance: " + saleBalance);
 
-            if (strandedTokens > 0) {
-                await tokenSaleContract.claimStrandedTokens(tokenContract.address, buyer4, tokenAmount, { from: owner1}).then((result) => { 
-                    LogEvents(result);
-                });
-            }
-            const newBalance = await tokenContract.balanceOf(buyer4);
+            await tokenContract.setTransferable();
+            const isTransferable = await tokenContract.transferable.call();
+            assert.equal(isTransferable, true, 'Token should now be transferable');
+
+            await tokenSaleContract.claimStrandedTokens(tokenContract.address, buyer4, tokenAmount, { from: owner1}).then((result) => { 
+                LogEvents(result);
+            });
+
+            const newBalance = (await tokenContract.balanceOf(buyer4)).toNumber();
             assert.equal(newBalance, balanceExpected, 'Balance did not increase correctly');
 
         } catch (error) {
@@ -567,8 +565,10 @@ contract('PeblikTokenSale', function(accounts) {
             //console.log("owner2Bal " + owner2Bal);
             //console.log("wallet1Bal " + wallet1Bal);
 
+            var amt = parseInt(web3.fromWei(totalExpected, "ether")) + parseInt(web3.fromWei(employeePoolToken, "ether")) + parseInt(web3.fromWei(advisorPoolToken, "ether")) + parseInt(web3.fromWei(bountyProgramToken, "ether"));
+
             //console.log("totalExpected + employeePoolToken + advisorPoolToken + bountyProgramToken " + (totalExpected + employeePoolToken + advisorPoolToken + bountyProgramToken));
-            assert.equal(totalSupply, (totalExpected + employeePoolToken + advisorPoolToken + bountyProgramToken), 'Sale Complete - Total supply did not increase correctly'); 
+            assert.equal(parseInt(web3.fromWei(totalSupply, "ether")), amt, 'Sale Complete - Total supply did not increase correctly'); 
             assert.equal(owner1Bal, owner1BalExpected + employeePoolToken, 'Sale Complete - Balance did not increase correctly');
             assert.equal(owner2Bal, owner2BalExpected + advisorPoolToken, 'Sale Complete - Balance did not increase correctly');
             assert.equal(wallet1Bal, wallet1BalExpected + bountyProgramToken, 'Sale Complete - Balance did not increase correctly');            

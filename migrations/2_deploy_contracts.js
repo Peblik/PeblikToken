@@ -32,7 +32,7 @@ module.exports = function(deployer, network, accounts) {
         //})
       });
 
-      const startTokenTime = Math.round((dt.getTime())/1000); // now
+      const startTokenTime = Math.round((dt.getTime())/1000) + 1800; // 30 minutes in the future
       const endTokenTime = startTokenTime + 5400; // 90 minutes after start
       
       const thresholds = [0,50000,100000,150000];
