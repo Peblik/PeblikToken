@@ -386,5 +386,4 @@ contract BaseTokenSale is Pausable {
 
         return tokens;
     }
-    
 }
