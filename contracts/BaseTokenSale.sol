@@ -222,8 +222,11 @@ contract BaseTokenSale is Pausable {
         return true;
     }
 
-    // 
-    // @return true if buyers can buy at the moment
+    /**
+    * Checks whether a buyer can participate in the sale and if the sale is still running.
+    * @param _buyer The address of the buyer
+    * @return true If the buyer's transaction can continue
+    */
     function validPurchase(address _buyer) internal view returns (bool) {
         if (now >= startTime && now <= endTime && !capReached) {
             // in main sale period
@@ -235,11 +238,11 @@ contract BaseTokenSale is Pausable {
     }
 
     /**
-    * Shut down the sale. No purchases can be accepted after this is done.
+    * Officially shut down the sale.
     */
     function completeSale () public onlyOwner {
         require(!saleComplete); 
-        require(capReached || now > endTime); 
+        require(capReached || now > endTime);
 
         saleComplete = true;
     }
@@ -251,7 +254,7 @@ contract BaseTokenSale is Pausable {
     function changeStartTime (uint256 _newTime) public onlyOwner {
         require(_newTime < endTime); 
         require(_newTime > now);
-        require(now < startTime); 
+        require(now < startTime);
         require(!saleComplete);
 
         startTime = _newTime;
@@ -370,7 +373,6 @@ contract BaseTokenSale is Pausable {
     // -----------------------------------------------------------
     /** Testing functions, for test script and debugging use. **/
     /** These will be removed from the production contracts before deploying to mainnet. */
-
     
     function calcTokens(uint256 weiAmount) public view returns (uint256 value) {
         uint256 currentPrice = getCurrentPrice(tokensSold);

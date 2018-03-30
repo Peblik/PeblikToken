@@ -67,7 +67,6 @@ contract('PeblikToken', function(accounts) {
         }
     });
   
-
     /** Need to catch the revert () in the following test */
    
     it('should not be able to transfer tokens yet', async function(){

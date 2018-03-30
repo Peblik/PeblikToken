@@ -44,8 +44,10 @@ contract PeblikPresale is BaseTokenSale {
     }
 
     /** 
-     * @dev Overrides validPurchase to add earlylist check. 
-     * @return true if buyers can buy at the moment
+     * Overrides validPurchase to add an earlyList check. 
+     * Checks whether a buyer can participate in the sale and if the sale is still running.
+     * @param _buyer The address of the buyer
+     * @return true If the buyer's transaction can continue
      */
     function validPurchase(address _buyer) internal view returns (bool) {
         if (now >= earlyTime && now <= endTime && !capReached) {
