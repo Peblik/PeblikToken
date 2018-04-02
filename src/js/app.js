@@ -126,7 +126,8 @@ App = {
           if (!error)
           {
               console.log(result.args);
-              $('#Status').text("Mint event: " + result.args.amount + " tokens minted.");
+              var minted = result.args.amount / 1000000000000000000;
+              $('#Status').text("Mint event: " + minted + " tokens minted.");
           } else {
               console.log(error);
           }
