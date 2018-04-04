@@ -63,9 +63,18 @@ contract PeblikTokenSale is BaseTokenSale {
         super.completeSale();
 
         // allocate and transfer all allocations to other wallets
-        token.mint(employeePoolWallet, employeePoolAmount);
-        token.mint(advisorPoolWallet, advisorPoolAmount);
-        token.mint(bountyProgramWallet, bountyProgramAmount);
+        if (!token.mint(employeePoolWallet, employeePoolAmount))
+        {
+            revert();
+        }
+        if (!token.mint(advisorPoolWallet, advisorPoolAmount))
+        {
+            revert();
+        }
+        if (!token.mint(bountyProgramWallet, bountyProgramAmount))
+        {
+            revert();
+        }
         
         SaleComplete(token.totalSupply());
     }
