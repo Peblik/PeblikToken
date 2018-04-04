@@ -33,7 +33,7 @@ module.exports = function(deployer, network, accounts) {
                 //console.log("Controller set to " + Token.controller());
             //})
         });
-    /*
+    
         const startTokenTime = Math.round((dt.getTime())/1000) + 1800; // 30 minutes in the future
         const endTokenTime = startTokenTime + 5400; // 90 minutes after start
         
@@ -50,7 +50,7 @@ module.exports = function(deployer, network, accounts) {
             //})
             
         });
-    */    
+       
     });
 };
 /*
