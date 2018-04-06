@@ -278,7 +278,7 @@ contract BaseTokenSale is Pausable {
     * @param _newRate The current USD per ETH rate, multiplied by 100
     */
     function changeConversionRate (uint256 _newRate) public onlyOwner {
-        require(_newRate >= 10000 && _newRate <= 10000000); // sanity check
+        require(_newRate >= 1000 && _newRate <= 10000000); // sanity check
         require(!saleComplete);
 
         centsPerEth = _newRate;
