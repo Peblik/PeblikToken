@@ -4,62 +4,39 @@ var TokenSale = artifacts.require("./PeblikTokenSale.sol");
 
 module.exports = function(deployer, network, accounts) {
     const owner = accounts[0]; //'0x627306090abaB3A6e1400e9345bC60c78a8BEf57';
-    deployer.deploy(Token).then(function() {
-        console.log("PeblikToken deployed at " + Token.address);
+    const wallet = '0x204afab6451928583637a16d75a34c22d3cd52ba'; // test multi-sig wallet
+ 
+    var dt = new Date();
+    dt.setDate(dt.getDate());
 
-        var dt = new Date();
-        dt.setDate(dt.getDate());
+    const earlyTime = Math.round((dt.getTime())/1000) + 1200; // 20 minutes in the future to allow for network delays
+    //const startTime = earlyTime + 1800; // 30 minutes in the future
+    const startTime = earlyTime + 84600; // 24 hours minus 30 minutes in the future
+    const endTime = startTime + 432000; // 5 days after start
+        
+    const weiAmount = 1000000000000000000;
+    const centsPerToken = 15;
+    const centsPerEth = 40000; // $400
+    const cap = 1000000; // 1m tokens
+    const minAmount =   1000; // $   10
+    const maxAmount = 200000; // $2,000
 
-        const earlyTime = Math.round((dt.getTime())/1000); // one second in the future
-        //const startTime = earlyTime + 1800; // 30 minutes in the future
-        const startTime = earlyTime + 86400; // 1 day in the future
-        const endTime = startTime + 172800; // 2 days after start
-            
-        const centsPerToken = 15;
-        const centsPerEth = 40000; // $400
-        const weiAmount = 1000000000000000000;
-        const cap = 500000; // 500K tokens
-        const minAmount =   1000; // $   10
-        const maxAmount = 500000; // $5,000
+    const tokenAddr = "0x6e2416ae86235b9fcbcb78580ddf3d4602172d4f";
 
-        var token;
-        Token.deployed().then(function(dep) {
-            token = dep;
-            console.log("PeblikToken: " + token.address);
-            token.availableSupply().then(function(avail) {
-                console.log("availableSupply = " + avail);
+    console.log("Token Address: " + tokenAddr + " earlyTime: " + earlyTime  + " startTime: " + startTime + " endTime: " + endTime + " centsPerToken: " + centsPerToken 
+    + " centsPerEth: " + centsPerEth + " cap: " + cap + " minAmount: " + minAmount + " maxAmount: " + minAmount + " wallet: " + wallet);
+    
+
+    deployer.deploy(Presale, tokenAddr, earlyTime, startTime, endTime, centsPerToken, centsPerEth, cap, minAmount, maxAmount, wallet).then(function () {
+        console.log("PeblikPresale deployed at " + Presale.address);
+        
+        /*token.setController(Presale.address, {from: owner}).then(function () {
+            token.controller().then(function(controlAddr) {
+                console.log("controller = " + controlAddr);
             });
         });
-
-        console.log("Token Address: " + Token.address + " earlyTime: " + earlyTime  + " startTime: " + startTime + " endTime: " + endTime + " centsPerToken: " + centsPerToken 
-        + " centsPerEth: " + centsPerEth + " cap: " + cap + " minAmount: " + minAmount + " maxAmount: " + minAmount + " wallet: " + accounts[7]);
-        
-        deployer.deploy(Presale, Token.address, earlyTime, startTime, endTime, centsPerToken, centsPerEth, cap, minAmount, maxAmount, accounts[7]).then(function () {
-            console.log("PeblikPresale deployed at " + Presale.address);
-            
-            return token.setController(Presale.address, {from: owner}).then(function () {
-                console.log("Controller set to " + token.controller());
-            })
-        });
-    
-        const startTokenTime = Math.round((dt.getTime())/1000) + 1800; // 30 minutes in the future
-        const endTokenTime = startTokenTime + 5400; // 90 minutes after start
-        
-        const thresholds = [0,50000,100000,150000];
-        const prices = [25,35,45,50];
-
-        const newCap = 200000;
-
-        return deployer.deploy(TokenSale, Token.address, startTokenTime, endTokenTime, centsPerToken, centsPerEth, newCap, minAmount, maxAmount, accounts[7], thresholds, prices).then(function () { 
-            console.log("PeblikTokenSale deployed at " + TokenSale.address);
-
-            //return Token.setController(Presale.address).then(function () {
-            //  console.log("Controller set to " + Token.controller());
-            //})
-            
-        });
-       
+        */
+    }).catch(function(err) {
+        console.log(err.message);
     });
 };
-/*
-module.exports = function(deployer, network, accounts) {};*/

@@ -103,17 +103,17 @@ contract PeblikPresale is BaseTokenSale {
         return earlylist[_buyer];
     }
 
-        // @return true if buyer is listed at all
+    // @return true if buyer is listed at all
     function isListed(address _buyer) public view returns (bool) {
         return (whitelist[_buyer] || earlylist[_buyer]);
     }
 
     /* Testing methods */
     /* These will be removed prior to deployment on mainnet. */
-    function isEarly() public view returns (bool) {
+    /*function isEarly() public view returns (bool) {
         if (now >= earlyTime && now < startTime) {
             return true;
         }
         return false;
-    }
+    }*/
 }

@@ -85,7 +85,6 @@ contract BaseTokenSale is Pausable {
     event BuyerAdded(address indexed buyer, uint256 buyerCount);
     event BuyerRemoved(address indexed buyer, uint256 buyerCount);
     event CapReached(uint256 cap, uint256 tokensSold);
-    event PurchaseError(string msg, address indexed sender);
     event LogPrice(uint256 tokenLevel, uint256 price);
     event ClaimedStrandedTokens(address tokenAddress, address beneficiary, uint256 tokenAmount);
 
@@ -373,7 +372,7 @@ contract BaseTokenSale is Pausable {
     // -----------------------------------------------------------
     /** Testing functions, for test script and debugging use. **/
     /** These will be removed from the production contracts before deploying to mainnet. */
-    
+    /*
     function calcTokens(uint256 weiAmount) public view returns (uint256 value) {
         uint256 currentPrice = getCurrentPrice(tokensSold);
         uint256 exactCents = weiAmount.mul(centsPerEth);
@@ -386,4 +385,5 @@ contract BaseTokenSale is Pausable {
 
         return tokens;
     }
+    */
 }
