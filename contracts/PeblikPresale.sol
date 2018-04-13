@@ -82,7 +82,7 @@ contract PeblikPresale is BaseTokenSale {
     }
 
     // MANAGE WHITELISTS ----------------------------------------------------
-    function addToEarlylist(address _buyer) public onlyOwner {
+    function addToEarlylist(address _buyer) public onlyOwnerOrPmtSrc {
         require(!saleComplete);
         require(_buyer != 0x0);
         earlylist[_buyer] = true; 
@@ -90,7 +90,7 @@ contract PeblikPresale is BaseTokenSale {
         EarlyBuyerAdded(_buyer, earlylistCount);
     }
 
-    function removeFromEarlylist(address _buyer) public onlyOwner {
+    function removeFromEarlylist(address _buyer) public onlyOwnerOrPmtSrc {
         require(!saleComplete);
         require(_buyer != 0x0 && earlylist[_buyer]);
         earlylist[_buyer] = false; 

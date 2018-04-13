@@ -133,6 +133,14 @@ contract BaseTokenSale is Pausable {
     }
 
     /**
+    * @dev Throws if called by any account other than the owner or paymentSource.
+    */
+    modifier onlyOwnerOrPmtSrc() {
+        require(msg.sender == owner || msg.sender == paymentSource);
+        _;
+    }
+
+    /**
      * @dev Fallback Function to buy the tokens
      */
     function () public payable {
@@ -165,10 +173,9 @@ contract BaseTokenSale is Pausable {
     * @param _buyer The address of the recipient of the tokens
     * @return bool Returns true if executed successfully.
     */
-    function externalPurchase (uint256 _centsAmount, address _buyer) whenNotPaused external returns (bool) {
+    function externalPurchase (uint256 _centsAmount, address _buyer) whenNotPaused onlyOwnerOrPmtSrc external returns (bool) {
         require(_buyer != 0x0);
         require(validPurchase(_buyer));
-        require(msg.sender == paymentSource); // transaction must come from pre-approved address
 
         uint256 exactCents = _centsAmount.mul(1e18);
         bool success = buyWithCents(exactCents, _buyer);
@@ -316,7 +323,7 @@ contract BaseTokenSale is Pausable {
 
     // MANAGE WHITELISTS ----------------------------------------------------
 
-    function addToWhitelist(address _buyer) public onlyOwner {
+    function addToWhitelist(address _buyer) public onlyOwnerOrPmtSrc {
         require(!saleComplete);
         require(_buyer != 0x0);
         whitelist[_buyer] = true;
@@ -324,7 +331,7 @@ contract BaseTokenSale is Pausable {
         BuyerAdded(_buyer, whitelistCount);
     }
 
-    function removeFromWhitelist(address _buyer) public onlyOwner {
+    function removeFromWhitelist(address _buyer) public onlyOwnerOrPmtSrc {
         require(!saleComplete);
         require(_buyer != 0x0 && whitelist[_buyer]);
         whitelist[_buyer] = false; 
