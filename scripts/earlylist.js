@@ -24,9 +24,10 @@ module.exports = function(callback) {
     ];
     
     var promises = [];
+    const presaleAddr = "0xb855bb50138da46b73005b79cc3b4dcf5867aea3";
     var presale;
-    Presale.deployed().then(function(dep) {
-        presale = dep;
+    Presale.at(presaleAddr).then(function(instance) {
+        presale =instance;
         console.log("PeblikPresale: " + presale.address);
 
         const addToList = (addr) => {

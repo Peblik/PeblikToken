@@ -331,6 +331,13 @@ contract BaseTokenSale is Pausable {
         BuyerAdded(_buyer, whitelistCount);
     }
 
+    function bulkAddToWhitelist(address[] _buyers) public onlyOwnerOrPmtSrc {
+        uint256 index;
+        for (index = 0; index < _buyers.length; index++) {
+            addToWhitelist(_buyers[index]);
+        }
+    }
+
     function removeFromWhitelist(address _buyer) public onlyOwnerOrPmtSrc {
         require(!saleComplete);
         require(_buyer != 0x0 && whitelist[_buyer]);

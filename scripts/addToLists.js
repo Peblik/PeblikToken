@@ -12,7 +12,7 @@ module.exports = function(callback) {
         });
     });
     
-    var address1 = "0xfb79188d08fAe4C816652fB66484f68B029F4805"; // Account 12
+    var address1 = "0x9d326F1fE1046C451e07578e32f4ce48e83f3C72"; // jag2
     var owner = "0xe64a4a8b4d6a19c71e3d18e0c3c7e20d9e8c86aa";
     var pmtSrc = "0x0f4f2ac550a1b4e2280d04c21cea7ebd822934b5";
     var presale;
@@ -20,13 +20,13 @@ module.exports = function(callback) {
         
         presale = dep;
         console.log("PeblikPresale: " + presale.address);
-        
+        /*
         token.setController(presale.address).then(function(success) {
             token.controller().then(function(addr) {
                 console.log("Set controller: " + addr);
             });
         });
-
+        */
         presale.addToWhitelist(address1).then(function() {
             presale.isWhitelisted(address1).then(function(success) {
                 console.log("Added to whitelist: " + address1 + " = " + success);
