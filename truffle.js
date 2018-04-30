@@ -23,8 +23,8 @@ module.exports = {
       provider: new HDWalletProvider(mnemonic, "https://ropsten.infura.io/" + infura_apikey),
       network_id: 3
       //, from: "0xCc0Def75157712D34b9E5545aEdc4CF6E15c5b3f"
-      , gasPrice: 10000000000
-      , gas: 3800000
+      , gasPrice: 25000000000 // 25 gwei
+      , gas: 4300000
     },
     mainnet: {
       provider: new HDWalletProvider(mnemonic, "https://mainnet.infura.io/" + infura_apikey),

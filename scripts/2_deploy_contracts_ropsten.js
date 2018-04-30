@@ -11,16 +11,17 @@ module.exports = function(deployer, network, accounts) {
         var dt = new Date();
         dt.setDate(dt.getDate());
 
-        const earlyTime = Math.round((dt.getTime())/1000); // one second in the future
-        const startTime = earlyTime + 36000; // 10 hours in the future
-        const endTime = startTime + 86400; // 24 hours after start
+        const earlyTime = Math.round((dt.getTime())/1000) + 1200; // 20 minutes in the future to allow for network delays
+        //const startTime = earlyTime + 1800; // 30 minutes in the future
+        const startTime = earlyTime + 84600; // 24 hours minus 30 minutes in the future
+        const endTime = startTime + 432000; // 5 days after start
             
         const weiAmount = 1000000000000000000;
         const centsPerToken = 15;
-        const centsPerEth = 40000; // $400
-        const cap = 1000000;       // 1m tokens
-        const minAmount =   1000;  // $   10
-        const maxAmount = 200000;  // $2,000
+        const centsPerEth = 50000; // $400
+        const cap = 1000000; // 1m tokens
+        const minAmount =   1000; // $   10
+        const maxAmount = 200000; // $2,000
 
         var token;
         Token.deployed().then(function(dep) {

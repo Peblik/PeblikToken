@@ -9,7 +9,7 @@ module.exports = function(deployer, network, accounts) {
     var dt = new Date();
     dt.setDate(dt.getDate());
 
-    const earlyTime = Math.round((dt.getTime())/1000) + 1200; // 20 minutes in the future to allow for network delays
+    const earlyTime = Math.round((dt.getTime())/1000) + 1800; // 30 minutes in the future to allow for network delays
     //const startTime = earlyTime + 1800; // 30 minutes in the future
     const startTime = earlyTime + 84600; // 24 hours minus 30 minutes in the future
     const endTime = startTime + 432000; // 5 days after start
@@ -29,8 +29,8 @@ module.exports = function(deployer, network, accounts) {
 
     deployer.deploy(Presale, tokenAddr, earlyTime, startTime, endTime, centsPerToken, centsPerEth, cap, minAmount, maxAmount, wallet).then(function () {
         console.log("PeblikPresale deployed at " + Presale.address);
-        
-        /*token.setController(Presale.address, {from: owner}).then(function () {
+        /*
+        token.setController(Presale.address, {from: owner}).then(function () {
             token.controller().then(function(controlAddr) {
                 console.log("controller = " + controlAddr);
             });
