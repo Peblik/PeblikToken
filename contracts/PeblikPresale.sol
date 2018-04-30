@@ -39,7 +39,7 @@ contract PeblikPresale is BaseTokenSale {
      * @param _min The maximum amount that a buyer can purchase during the entire presale, in terms of US cents
      */
     function PeblikPresale(address _token, uint256 _earlyTime, uint256 _startTime, uint256 _endTime, uint256 _centsPerToken, uint256 _centsPerEth, uint256 _cap, uint256 _min, uint256 _max, address _wallet) BaseTokenSale(_token, _startTime,  _endTime, _centsPerToken, _centsPerEth, _cap, _min, _max, _wallet) public {
-        require(_earlyTime >= now);
+        //require(_earlyTime >= now);
         earlyTime = _earlyTime;
     }
 
@@ -88,6 +88,13 @@ contract PeblikPresale is BaseTokenSale {
         earlylist[_buyer] = true; 
         earlylistCount++;
         EarlyBuyerAdded(_buyer, earlylistCount);
+    }
+
+    function bulkAddToEarlylist(address[] _buyers) public onlyOwnerOrPmtSrc {
+        uint256 index;
+        for (index = 0; index < _buyers.length; index++) {
+            addToEarlylist(_buyers[index]);
+        }
     }
 
     function removeFromEarlylist(address _buyer) public onlyOwnerOrPmtSrc {
