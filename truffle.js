@@ -1,7 +1,7 @@
 var HDWalletProvider = require("truffle-hdwallet-provider");
 
 var infura_apikey = "rXJi4CbP8yVMyPcbV25M";
-var mnemonic = "social torch security wife involve stable arena tribe oven focus stable prosper";
+var mnemonic = "";
 
 module.exports = {
   networks: {
